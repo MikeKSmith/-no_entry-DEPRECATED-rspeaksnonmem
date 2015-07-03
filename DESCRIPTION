@@ -1,14 +1,16 @@
-Package: RsN
+Package: rspeaksnonmem
 Type: Package
 Title: Read, Modify and run NONMEM from within R
 Version: 0.1
 Date: 2015-07-03
 Authors@R: c(person("Mike", "Smith", email = "mike.k.smith@pfizer.com",role = c("aut", "cre")),
-             person("Andrew", "Hooker", email = "andrew.hooker@farmbio.uu.se",role = c("aut")))
+             person("Andrew", "Hooker", email = "andrew.hooker@farmbio.uu.se",role = c("aut")),
+             person("Ron", "Keizer", email = "ronkeizer@gmail.com",role = c("aut"))
+             )
 Description: Read, Modify and run NONMEM from within R. Also calls PsN to run more complex tasks.
 License: GNU Public License
 LazyData: TRUE
 Depends: R (>= 2.6.1)
-Imports: RNMImport
-Suggests: xpose4, testthat
+Imports: RNMImport, xpose4
+Suggests: testthat
 License: GPL
