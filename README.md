@@ -26,7 +26,11 @@ Eventually, `rspeaksnonmem` will be released to CRAN, but while still in develop
 `importNmMod` which reads and parses the NONMEM control stream. `rspeaksnonmem` then works with
 the data, parameter values, and task information separately from the model.
 
-Note that before installation, the package `RNMImport` needs to be installed (not on CRAN, so manual installation). Download the `.tar` file from [R-Forge](https://r-forge.r-project.org/R/?group_id=1922) and run in R:
+Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
 
-    install.packages("~/Downloads/RNMImport_4.0-27.tar.gz", repos=NULL,type = "source")
+    install.packages("RNMImport", repos="http://R-Forge.R-project.org")
+
+or download the `.tar` file from [R-Forge](https://r-forge.r-project.org/R/?group_id=1922) and run in R:
+
+    install.packages("~/Downloads/RNMImport_4.0-27.tar.gz", repos=NULL, type = "source")
 
