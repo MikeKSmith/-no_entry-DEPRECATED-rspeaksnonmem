@@ -10,25 +10,21 @@
 #' @examples
 #' estimate.NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 
-estimate.NM <- function(modelFile = NULL, modelExtension = ".mod", reportExtension = ".lst", working.dir = NULL, cleanup = T, NMcommand = "c:\\pkpd\\bin\\nonmem-7.2.bat") {
-    orig.dir <- getwd()
-    if (is.null(working.dir)) 
-        working.dir <- getwd() else setwd(working.dir)
-    if (win()) {
-        command <- "c:\\pkpd\\bin\\nonmem-7.2.bat"
-        command <- paste(command, paste(modelFile, modelExtension, sep = ""), paste(modelFile, reportExtension, sep = ""))
-        cat(paste(command, "\n"))
-        system(command)
-    }
-    
-    if (!win()) {
-        command <- "nonmem-7.3"
-        command <- paste(command, paste(modelFile, modelExtension, sep = ""), paste(modelFile, reportExtension, sep = ""))
-        cat(paste(command, "\n"))
-        execute(command)
-    }
-    
-    if (cleanup) 
-        cleanup()
-    setwd(orig.dir)
+estimate.NM <- function(modelFile = NULL, modelExtension = ".mod", 
+                        reportExtension = ".lst", working.dir = NULL, 
+                        cleanup = T, 
+                        NMcommand = if(win()){"c:\\pkpd\\bin\\nonmem-7.2.bat"} 
+                        else {"c:\\pkpd\\bin\\nonmem-7.2.bat"}) {
+  orig.dir <- getwd()
+  if (is.null(working.dir)) 
+    working.dir <- getwd() else setwd(working.dir)
+  
+  command <- NMcommand
+  command <- paste(command, paste(modelFile, modelExtension, sep = ""), paste(modelFile, reportExtension, sep = ""))
+  cat(paste(command, "\n"))
+  execute(command)
+  
+  if (cleanup) 
+    cleanup()
+  setwd(orig.dir)
 } 
