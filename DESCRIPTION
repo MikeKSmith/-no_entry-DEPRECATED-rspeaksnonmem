@@ -8,9 +8,10 @@ Authors@R: c(person("Mike", "Smith", email = "mike.k.smith@pfizer.com",role = c(
              person("Ron", "Keizer", email = "ronkeizer@gmail.com",role = c("aut"))
              )
 Description: Read, Modify and run NONMEM from within R. Also calls PsN to run more complex tasks.
-License: GNU Public License
+License: License: GPL
 LazyData: TRUE
 Depends: R (>= 2.6.1)
 Imports: RNMImport, xpose4
-Suggests: testthat
-License: GPL
+Suggests: testthat,
+    knitr
+VignetteBuilder: knitr
