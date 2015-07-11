@@ -25,14 +25,13 @@ runRecord.PsN <- function(to = NULL, runRoot = "Run", modelExtension = ".mod", o
     setwd(runpath)
     
     cat(paste(command, "\n"))
-    if (.Platform$OS.type == "windows") {
+    if (win()) {
         command <- "c:\\pkpd\\bin\\runrecord-4.2.0.bat"
         command <- paste(command, " --to=", to, " ", addargs, sep = "")
         cat(paste(command, "\n"))
         args <- list(command)
         do.call(system, args)
-    }
-    if (.Platform$OS.type != "windows") {
+    } else {
         command <- "runrecord-4.2.0 "
         command <- paste(command, " --to=", to, " ", addargs, sep = "")
         cat(paste(command, "\n"))

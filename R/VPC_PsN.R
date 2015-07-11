@@ -14,14 +14,13 @@ VPC.PsN <- function(modelExtension = ".mod", modelFile, nsamp, seed, addargs, cl
     if (is.null(working.dir)) 
         working.dir <- getwd() else setwd(working.dir)
     
-    if (.Platform$OS.type == "windows") {
+    if (win()) {
         command <- "c:\\pkpd\\bin\\vpc-3.5.4.bat "
         command <- paste(command, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
         cat(paste(command, "\n"))
         args <- list(command)
         do.call(system, args)
-    }
-    if (.Platform$OS.type != "windows") {
+    } else {
         command <- "vpc-4.2.0 "
         command <- paste(command, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
         cat(paste(command, "\n"))
