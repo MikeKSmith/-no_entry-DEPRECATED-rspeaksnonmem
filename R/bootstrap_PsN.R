@@ -11,11 +11,10 @@
 #' @examples
 bootstrap.PsN <- function(modelFile, modelExtension = ".mod", nsamp, seed, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
     orig.dir <- getwd()
-    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-    setwd(working.dir)
+    if (is.null(working.dir)) 
+        working.dir <- getwd() else setwd(working.dir)
     
     if (.Platform$OS.type == "windows") {
-    if (win()) {
         command <- "c:\\pkpd\\bin\\bootstrap-3.5.4.bat "
         command <- paste(command, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
         cat(paste(command, "\n"))
@@ -23,13 +22,13 @@ bootstrap.PsN <- function(modelFile, modelExtension = ".mod", nsamp, seed, addar
         do.call(system, args)
     }
     if (.Platform$OS.type != "windows") {
-    if (!win()) {
         command <- "bootstrap-4.2.0 "
         command <- paste(command, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
         cat(paste(command, "\n"))
         system(command)
     }
     
-    if (cleanup) cleanup()
+    if (cleanup) 
+        cleanup()
     setwd(orig.dir)
 } 

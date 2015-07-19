@@ -13,17 +13,18 @@
 estimate.NM <- function(modelFile = NULL, modelExtension = ".mod", 
                         reportExtension = ".lst", working.dir = NULL, 
                         cleanup = T, 
-                        NMcommand = if(metrumrg:::win()){"c:\\pkpd\\bin\\nonmem-7.2.bat"} 
+                        NMcommand = if(win()){"c:\\pkpd\\bin\\nonmem-7.2.bat"} 
                         else {"c:\\pkpd\\bin\\nonmem-7.2.bat"}) {
   orig.dir <- getwd()
-  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-  setwd(working.dir)
+  if (is.null(working.dir)) 
+    working.dir <- getwd() else setwd(working.dir)
   
   command <- NMcommand
   command <- paste(command, paste(modelFile, modelExtension, sep = ""), paste(modelFile, reportExtension, sep = ""))
   cat(paste(command, "\n"))
   execute(command)
   
-  if (cleanup) cleanup()
+  if (cleanup) 
+    cleanup()
   setwd(orig.dir)
 } 

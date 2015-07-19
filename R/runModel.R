@@ -13,8 +13,8 @@
 runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = F, runno = NULL, outFormat = NULL, templateModel = NULL, nsamp = 100, 
     working.dir = NULL) {
     orig.dir <- getwd()
-    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-    setwd(working.dir)
+    if (is.null(working.dir)) 
+        working.dir <- getwd() else setwd(working.dir)
     
     #' Initialise output list
     output <- as.list(NULL)
