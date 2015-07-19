@@ -7,9 +7,9 @@
 
 basicGOF.Xpose <- function(runno = NULL) {
     ## ----setupRunnoforXpose--------------------------------------------------
-    if (!length(runno) > 0) 
-        runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
-    
+    if (!length(runno) > 0) {
+      runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
+    }
     
     ## ----createXpdb----------------------------------------------------------
     base.xpdb <- xpose4::xpose.data(runno)

@@ -12,8 +12,8 @@
 runRecord.PsN <- function(to = NULL, runRoot = "Run", modelExtension = ".mod", outputExtension = ".lst", addargs = NULL, cleanup = T, working.dir = NULL, 
     ...) {
     orig.dir <- getwd()
-    if (is.null(working.dir)) 
-        working.dir <- getwd() else setwd(working.dir)
+    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
+    setwd(working.dir)
     
     modelFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", modelExtension, sep = ""), recursive = T)
     lstFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", outputExtension, sep = ""), recursive = T)

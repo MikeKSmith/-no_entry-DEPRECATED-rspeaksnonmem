@@ -10,8 +10,8 @@
 #'## ----SSE:
 SSE.PsN <- function(modelFile, modelExtension = ".mod", nsamp, seed, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
     orig.dir <- getwd()
-    if (is.null(working.dir)) 
-        working.dir <- getwd() else setwd(working.dir)
+    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
+    setwd(working.dir)
     
     if (.Platform$OS.type == "windows") {
         command <- "c:\\pkpd\\bin\\sse-3.5.4.bat "
