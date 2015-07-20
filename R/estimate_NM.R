@@ -13,18 +13,16 @@
 estimate.NM <- function(modelFile = NULL, modelExtension = ".mod", 
                         reportExtension = ".lst", working.dir = NULL, 
                         cleanup = T, 
-                        NMcommand = if(win()){"c:\\pkpd\\bin\\nonmem-7.2.bat"} 
-                        else {"c:\\pkpd\\bin\\nonmem-7.2.bat"}) {
+                        NMcommand = "c:/nm_7.3.0_g/runfiles/nmfe73g.bat") {
   orig.dir <- getwd()
-  if (is.null(working.dir)) 
-    working.dir <- getwd() else setwd(working.dir)
-  
-  command <- NMcommand
+  working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
+  setwd( working.dir )
+
+  command <- ifelse( win(), NMcommand, Sys.which("nmfe") )
   command <- paste(command, paste(modelFile, modelExtension, sep = ""), paste(modelFile, reportExtension, sep = ""))
-  cat(paste(command, "\n"))
-  execute(command)
+  cat( paste(command, "\n") )
+  execute( command )
   
-  if (cleanup) 
-    cleanup()
+  if (cleanup) cleanup()
   setwd(orig.dir)
 } 

@@ -11,24 +11,23 @@
 #'
 VPC.PsN <- function(modelExtension = ".mod", modelFile, nsamp, seed, addargs, cleanup = T, working.dir = NULL, ...) {
     orig.dir <- getwd()
-    if (is.null(working.dir)) 
-        working.dir <- getwd() else setwd(working.dir)
+    working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
+    setwd( working.dir )
     
-    if (.Platform$OS.type == "windows") {
+    if (win()) {
         command <- "c:\\pkpd\\bin\\vpc-3.5.4.bat "
         command <- paste(command, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
         cat(paste(command, "\n"))
         args <- list(command)
         do.call(system, args)
     }
-    if (.Platform$OS.type != "windows") {
+    if (!win()) {
         command <- "vpc-4.2.0 "
         command <- paste(command, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
         cat(paste(command, "\n"))
         system(command)
     }
     
-    if (cleanup) 
-        cleanup()
+    if (cleanup) cleanup()
     setwd(orig.dir)
 } 

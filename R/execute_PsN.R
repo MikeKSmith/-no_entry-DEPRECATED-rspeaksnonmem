@@ -11,10 +11,10 @@
 #'
 execute.PsN <- function(modelFile = NULL, modelExtension = ".mod", addargs = "", working.dir = NULL, cleanup = T, ...) {
     orig.dir <- getwd()
-    if (is.null(working.dir)) 
-        working.dir <- getwd() else setwd(working.dir)
+    working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
+    setwd( working.dir )
     
-    if (.Platform$OS.type == "windows") {
+    if (win()) {
         command <- "c:\\pkpd\\bin\\execute-3.5.4.bat"
         
         command <- paste(command, paste(modelFile, modelExtension, sep = ""))
@@ -23,15 +23,14 @@ execute.PsN <- function(modelFile = NULL, modelExtension = ".mod", addargs = "",
         args <- list(command)
         do.call(system, args)
     }
-    if (.Platform$OS.type != "windows") {
+    if (!win()) {
         command <- "execute-3.5.4"
         command <- paste(command, paste(modelFile, modelExtension, sep = ""), addargs)
         cat(paste(command, "\n"))
         system(command)
     }
     
-    if (cleanup) 
-        cleanup()
+    if (cleanup) cleanup()
     
     setwd(orig.dir)
 } 

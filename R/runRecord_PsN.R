@@ -12,8 +12,8 @@
 runRecord.PsN <- function(to = NULL, runRoot = "Run", modelExtension = ".mod", outputExtension = ".lst", addargs = NULL, cleanup = T, working.dir = NULL, 
     ...) {
     orig.dir <- getwd()
-    if (is.null(working.dir)) 
-        working.dir <- getwd() else setwd(working.dir)
+    working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
+    setwd( working.dir )
     
     modelFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", modelExtension, sep = ""), recursive = T)
     lstFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", outputExtension, sep = ""), recursive = T)
@@ -25,14 +25,14 @@ runRecord.PsN <- function(to = NULL, runRoot = "Run", modelExtension = ".mod", o
     setwd(runpath)
     
     cat(paste(command, "\n"))
-    if (.Platform$OS.type == "windows") {
+    if (win()) {
         command <- "c:\\pkpd\\bin\\runrecord-4.2.0.bat"
         command <- paste(command, " --to=", to, " ", addargs, sep = "")
         cat(paste(command, "\n"))
         args <- list(command)
         do.call(system, args)
     }
-    if (.Platform$OS.type != "windows") {
+    if (!win()) {
         command <- "runrecord-4.2.0 "
         command <- paste(command, " --to=", to, " ", addargs, sep = "")
         cat(paste(command, "\n"))
@@ -43,8 +43,7 @@ runRecord.PsN <- function(to = NULL, runRoot = "Run", modelExtension = ".mod", o
     names(runRecord) <- scan("AAruninfo.txt", sep = ";", what = "character", skip = 4, nlines = 1)
     runRecord$Run <- seq(1, to)
     runRecord <- runRecord[, -ncol(runRecord)]
-    if (cleanup) 
-        cleanup()
+    if (cleanup) cleanup()
     return(runRecord)
     setwd(orig.dir)
 } 
