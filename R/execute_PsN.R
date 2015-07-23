@@ -9,28 +9,20 @@
 #' @examples
 #' execute.PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 #'
-execute.PsN <- function(modelFile = NULL, modelExtension = ".mod", addargs = "", working.dir = NULL, cleanup = T, ...) {
-    orig.dir <- getwd()
-    working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
-    setwd( working.dir )
-    
-    if (win()) {
-        command <- "c:\\pkpd\\bin\\execute-3.5.4.bat"
-        
-        command <- paste(command, paste(modelFile, modelExtension, sep = ""))
-        cat(paste(command, "\n"))
-        
-        args <- list(command)
-        do.call(system, args)
-    }
-    if (!win()) {
-        command <- "execute-3.5.4"
-        command <- paste(command, paste(modelFile, modelExtension, sep = ""), addargs)
-        cat(paste(command, "\n"))
-        system(command)
-    }
-    
-    if (cleanup) cleanup()
-    
-    setwd(orig.dir)
-} 
+execute.PsN <- function(command = NULL,
+                        modelFile = NULL, modelExtension = ".mod",
+                        addargs = NULL,
+                        cleanup = T, working.dir = NULL, ... ){
+  orig.dir <- getwd()
+  working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
+  setwd( working.dir )
+
+  baseCommand <- ifelse(is.null(command), findExecutable("execute"), command)
+  command <- paste(baseCommand, paste(modelFile, modelExtension, sep = ""), addargs)
+  cat(paste(command, "\n"))
+  do.call(system,args=list(command=command))
+
+  if (cleanup) cleanup()
+
+  setwd(orig.dir)
+}
