@@ -8,20 +8,16 @@
 #' @examples
 #'
 #'## ----SSE:
-SSE.PsN <- function(command=NULL,
-                    modelFile = NULL, modelExtension = ".mod",
-                    nsamp = 100, seed = 123456,
-                    addargs = NULL,
-                    cleanup = T, working.dir = NULL, ...) {
-  orig.dir <- getwd()
-  working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
-  setwd( working.dir )
+SSE_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".mod", nsamp = 100, 
+    seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
+    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
 
-  baseCommand <- ifelse(is.null(command), findExecutable("SSE"), command)
-  command <- paste(baseCommand, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", nsamp, " --seed=", seed, " ", addargs, sep = "")
-  cat(paste(command, "\n"))
-  system(command)
-
-if (cleanup) cleanup()
-setwd(orig.dir)
-}
+    baseCommand <- ifelse(is.null(command), findExecutable("SSE"), command)
+    command <- paste(baseCommand, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", 
+        nsamp, " --seed=", seed, " ", 
+        " --directory=", working.dir,
+        if(cleanup) " --clean=2",
+        addargs, sep = "")
+    cat(paste(command, "\n"))
+    system(command)
+} 

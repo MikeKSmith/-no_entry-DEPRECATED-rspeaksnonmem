@@ -3,7 +3,8 @@ getNMBlocks <- function(RNMImportObject) {
     Raw <- RNMImportObject[[1]]
     blocks <- grep("^\\$", Raw)
     nextBlock <- c(blocks[-1], length(Raw))
-    ## Drop commented out lines blocks<-blocks[-grep('[;]',blocks)] Get first 'word' to determine order
+    ## Drop commented out lines blocks<-blocks[-grep('[;]',blocks)] Get first 'word' to
+    ## determine order
     blocks2 <- sub(" +.*", "", Raw[blocks])
     blocks3 <- sub("$", "", blocks2, fixed = T)
     data.frame(Blocks = blocks2, Search = blocks3, firstRow = blocks, nextBlockRow = nextBlock)

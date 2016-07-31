@@ -3,13 +3,11 @@
 #' @param runno NONMEM run number (based on sdtab).
 #' @return Xpose core diagnostic plots
 #' @examples
-#' basicGOF.Xpose(1)
+#' basicGOF_Xpose(1)
 
-basicGOF.Xpose <- function(runno = NULL) {
+basicGOF_Xpose <- function(runno = NULL) {
     ## ----setupRunnoforXpose--------------------------------------------------
-    if (!length(runno) > 0) 
-        runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
-    
+    if (!length(runno) > 0) runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
     
     ## ----createXpdb----------------------------------------------------------
     base.xpdb <- xpose4::xpose.data(runno)

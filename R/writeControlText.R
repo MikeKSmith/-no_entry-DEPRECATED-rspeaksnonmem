@@ -7,11 +7,11 @@
 #' @param modelBlockNames
 #' @return NONMEM estimation output files
 #' @examples
-#' execute.PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
+#' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 #'### ----writeControlText: Write out a parsed Model as a NONMEM control stream
 
-writeControlText <- function(templateModel, parsedControl, modelFile, modelExtension = ".mod", modelBlockNames = c("PK", "PRE", "SUB", "MOD", "DES", 
-    "ERR")) {
+writeControlText <- function(templateModel, parsedControl, modelFile, modelExtension = ".mod", 
+    modelBlockNames = c("PK", "PRE", "SUB", "MOD", "DES", "ERR")) {
     
     ### Get RAW NM control stream items
     control <- templateModel
@@ -20,7 +20,8 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     blockpos <- grep("^ *[$]", control)
     blocks <- control[blockpos]
     
-    ## Drop commented out lines blocks<-blocks[-grep('[;]',blocks)] Get first 'word' to determine order
+    ## Drop commented out lines blocks<-blocks[-grep('[;]',blocks)] Get first 'word' to
+    ## determine order
     blocks1 <- sub(" +.*", "", blocks)
     blocks2 <- sub("$", "", blocks1, fixed = T)
     orig1 <- data.frame(block = blocks2, line = blockpos, stringsAsFactors = F)
@@ -28,25 +29,29 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     
     blocks3 <- substr(orig2$block, 1, 3)
     orig.pos <- c(1:length(blocks3))
-    orig <- data.frame(block.id = blocks3, orig.pos = orig.pos, orig.block = orig2$block, line = orig2$line, stringsAsFactors = F)
+    orig <- data.frame(block.id = blocks3, orig.pos = orig.pos, orig.block = orig2$block, line = orig2$line, 
+        stringsAsFactors = F)
     
     ### Get list of objects from the parsed Control file
     control2 <- parsedControl
     control2Blocks <- substr(casefold(names(control2), upper = T), 1, 3)
     RNMI.pos <- c(1:length(control2Blocks))
-    RNMI <- data.frame(block.id = control2Blocks, RNMI.pos = RNMI.pos, RNMI.block = names(parsedControl), stringsAsFactors = F)
+    RNMI <- data.frame(block.id = control2Blocks, RNMI.pos = RNMI.pos, RNMI.block = names(parsedControl), 
+        stringsAsFactors = F)
     
     ## Match blocks in control file to items in the parsed list
     ctrlmerged <- merge(orig, RNMI, by = "block.id", all = T)
     ctrlmerged <- ctrlmerged[order(ctrlmerged$orig.pos), ]
-    ctrlmerged$orig.block[is.na(ctrlmerged$orig.block)] <- casefold(ctrlmerged$RNMI.block[is.na(ctrlmerged$orig.block)], upper = T)
+    ctrlmerged$orig.block[is.na(ctrlmerged$orig.block)] <- casefold(ctrlmerged$RNMI.block[is.na(ctrlmerged$orig.block)], 
+        upper = T)
     
-    ## Leave out model related blocks from parsedcontrol Will pick these up directly from Raw file.  This means that we do not expect user to update the
-    ## model!
+    ## Leave out model related blocks from parsedcontrol Will pick these up directly from Raw
+    ## file.  This means that we do not expect user to update the model!
     otherBlocks <- ctrlmerged[!(ctrlmerged$block.id %in% modelBlockNames), ]
     control2 <- control2[otherBlocks$RNMI.block]
     
-    ## If blocks appear in the original, but not RNMImport parsed version then create RNMImport blocks.  e.g. $DES
+    ## If blocks appear in the original, but not RNMImport parsed version then create RNMImport
+    ## blocks.  e.g. $DES
     
     modelBlockCode <- list(NULL)
     modelBlocks <- ctrlmerged[ctrlmerged$block.id %in% modelBlockNames, ]
@@ -62,7 +67,8 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     }
     
     addBlocks <- list(NULL)
-    missBlocks <- ctrlmerged[is.na(ctrlmerged$RNMI.pos) & !(ctrlmerged$block.id %in% modelBlockNames), ]
+    missBlocks <- ctrlmerged[is.na(ctrlmerged$RNMI.pos) & !(ctrlmerged$block.id %in% modelBlockNames), 
+        ]
     if (nrow(missBlocks) > 0) {
         for (i in 1:nrow(missBlocks)) {
             nextBlock <- ctrlmerged[missBlocks$orig.pos[i] + 1, ]
@@ -85,7 +91,8 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     control2$Theta[control2$Theta[, 2] == 0, c(1, 3)] <- NA
     control2$Theta[control2$Theta[, 2] == 0, 2] <- "0 FIX"
     
-    ### Change $OMEGA values = 0 to '0 FIX' THIS NEEDS WORK!!!  Turn Omega matrix into diagonal etc.  and handle block structures
+    ### Change $OMEGA values = 0 to '0 FIX' THIS NEEDS WORK!!!  Turn Omega matrix into diagonal
+    ### etc.  and handle block structures
     
     Omega <- NULL
     
@@ -154,15 +161,17 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     
     #################################################################### PREPARE ITEMS IN CONTROL2 FOR WRITING OUT
     
-    ## $INPUT records - Paste together the variables names and labels e.g. SID=ID TIME=TIME AMT=AMT BWT=DROP MDV=MDV DV=DV More detail than necessary /
-    ## usual, but consistent with RNMImport object
+    ## $INPUT records - Paste together the variables names and labels e.g. SID=ID TIME=TIME
+    ## AMT=AMT BWT=DROP MDV=MDV DV=DV More detail than necessary / usual, but consistent with
+    ## RNMImport object
     
     #### If the two are equal then write only one
     
     Input <- control2$Input[, "nmName"]
     diffInput <- control2$Input[, "nmName"] != control2$Input[, "Label"]
     if (any(diffInput)) {
-        Input[diffInput] <- paste(control2$Input[diffInput, "nmName"], control2$Input[diffInput, "Label"], sep = "=")
+        Input[diffInput] <- paste(control2$Input[diffInput, "nmName"], control2$Input[diffInput, 
+            "Label"], sep = "=")
     }
     
     control2$Input <- Input
@@ -194,8 +203,8 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
         paste(x, collapse = ",")
     }), ")\n")
     Theta <- gsub("NA", "", Theta)
-    Theta[is.na(control2$Theta[, 1]) & is.na(control2$Theta[, 3])] <- paste(control2$Theta[is.na(control2$Theta[, 1]) & is.na(control2$Theta[, 3]), 2], 
-        "\n")
+    Theta[is.na(control2$Theta[, 1]) & is.na(control2$Theta[, 3])] <- paste(control2$Theta[is.na(control2$Theta[, 
+        1]) & is.na(control2$Theta[, 3]), 2], "\n")
     
     control2$Theta <- Theta
     
@@ -205,7 +214,8 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     
     ## Check for existence of $Tables in original code
     if (length(control2$Tables)) {
-        ## Collect $TABLE variable strings, delete comma separator, append ONEHEADER NOPRINT statements
+        ## Collect $TABLE variable strings, delete comma separator, append ONEHEADER NOPRINT
+        ## statements
         Tables <- apply(control2$Table, 1, function(x) {
             paste("$TABLE ", gsub(",", "", x[2]), " ONEHEADER NOPRINT FILE=", x[1], "\n", sep = "")
         })
@@ -229,11 +239,13 @@ writeControlText <- function(templateModel, parsedControl, modelFile, modelExten
     
     ##################################### Writing out the control statements
     
-    ### PROBABLY NEEDS BETTER HANDLING OF ORDER OF BLOCKS IN THE NONMEM CODE USE RULES FROM NONMEM HELP GUIDES?  FOR NOW BASED ON ORDER IN ORIGINAL NM CODE
-    ### IF ITEMS ADDED THROUGH updateMOG(...) THEN ADD THESE AT THE END?  USUALLY TABLE ITEMS
+    ### PROBABLY NEEDS BETTER HANDLING OF ORDER OF BLOCKS IN THE NONMEM CODE USE RULES FROM
+    ### NONMEM HELP GUIDES?  FOR NOW BASED ON ORDER IN ORIGINAL NM CODE IF ITEMS ADDED THROUGH
+    ### updateMOG(...) THEN ADD THESE AT THE END?  USUALLY TABLE ITEMS
     
     ## 'special' blocks need $ statement on one line and content below
-    special <- is.element(ctrlmerged$block.id, c("PK", "PRED", "ERR", "THE", "OME", "SIG", "DES", "MOD"))
+    special <- is.element(ctrlmerged$block.id, c("PK", "PRED", "ERR", "THE", "OME", "SIG", 
+        "DES", "MOD"))
     model <- is.element(ctrlmerged$block.id, modelBlockNames)
     ctrlmerged$orig.block[special] <- paste(ctrlmerged$orig.block[special], "\n")
     ctrlmerged$orig.block[model] <- ""

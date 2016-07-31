@@ -13,8 +13,10 @@
 #' @return NONMEM estimation output files
 #' @examples
 
-updateModel <- function(parsedObject, problem = parsedObject$Problem, theta = parsedObject$Theta, omega = parsedObject$Omega, sigma = parsedObject$Sigma, 
-    task = parsedObject$Estimates, data = parsedObject$Data, dataNames = parsedObject$Input, tables = parsedObject$Tables, addPsNHeader = F, ...) {
+updateModel <- function(parsedObject, problem = parsedObject$Problem, theta = parsedObject$Theta, 
+    omega = parsedObject$Omega, sigma = parsedObject$Sigma, task = parsedObject$Estimates, 
+    data = parsedObject$Data, dataNames = parsedObject$Input, tables = parsedObject$Tables, 
+    addPsNHeader = F, ...) {
     newObject <- parsedObject
     newObject$Problem <- problem
     newObject$Theta <- theta
@@ -24,7 +26,6 @@ updateModel <- function(parsedObject, problem = parsedObject$Problem, theta = pa
     newObject$Data <- data
     newObject$Input <- dataNames
     newObject$Tables <- tables
-    if (addPsNHeader) 
-        newObject$Problem <- PsNHeader(parsedObject, ...)
+    if (addPsNHeader) newObject$Problem <- PsNHeader(parsedObject, ...)
     return(newObject)
 } 

@@ -10,19 +10,15 @@
 #' @examples
 #' estimate.NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 
-estimate.NM <- function(command = NULL,
-                        modelFile = NULL, modelExtension = ".mod",
-                        reportExtension = ".lst",
-                        cleanup = T, working.dir = NULL, ... ) {
-  orig.dir <- getwd()
-  working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
-  setwd( working.dir )
+estimate_NM <- function(command = NULL, modelFile = NULL, modelExtension = ".mod", reportExtension = ".lst", 
+    cleanup = T, working.dir = NULL, ...) {
+    # working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
 
-  baseCommand <- ifelse(is.null(command), findExecutable("execute"), command)
-  command <- paste(baseCommand, paste(modelFile, modelExtension, sep = ""), paste(modelFile, reportExtension, sep = ""))
-  cat( paste(command, "\n") )
-  execute( command )
-
-  if (cleanup) cleanup()
-  setwd(orig.dir)
-}
+    baseCommand <- ifelse(is.null(command), findExecutable("nonmem"), command)
+    command <- paste(baseCommand, paste(modelFile, modelExtension, sep = ""), paste(modelFile, 
+        reportExtension, sep = ""))
+    cat(paste(command, "\n"))
+    execute(command)
+    
+    if (cleanup) cleanup()
+} 

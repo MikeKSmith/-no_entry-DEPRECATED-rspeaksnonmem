@@ -49,32 +49,32 @@ library(rspeaksnonmem)
 ```
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
-devtools::load_all(pkg=".")
+# devtools::load_all(pkg=".")
+devtools::load_code(system.file("R", package="rspeaksnonmem"))
 ```
 
 
 Copy an example dataset and model to a directory of your choice
 
 ```{r,results='hide',echo=T}
-user_dir <- "~/tmp/"
-file.copy(file.path(system.file("exdata", package="rspeaksnonmem"),
-                    c("warfarin_conc_pca.csv","warfarin_PK_CONC_MKS.ctl")),
-          user_dir)
+# user_dir <- file.path(getwd(),"foo")
+# dir.create(user_dir)
+# file.copy(file.path(system.file("exdata", package="rspeaksnonmem")),
+#           file.path(user_dir))
+setwd(system.file("exdata", package="rspeaksnonmem"))
 ```
 
 Rund the model:
 
 ```{r}
-nm_command <- paste0("source ~/.bashrc;","nmfe73")
-estimate.NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', 
-            working.dir=user_dir,NMcommand = nm_command)
+estimate_NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl')
 ```
 
 Look at the output
 ```{r,message=F}
 cur_dir <- getwd()
 setwd(user_dir)
-basicGOF.Xpose()
+basicGOF_Xpose()
 setwd(cur_dir)
 ```
 

@@ -7,22 +7,17 @@
 #' @param cleanup Whether to clean up additional NONMEM files and folders following estimation. Defaults to TRUE.
 #' @return NONMEM estimation output files
 #' @examples
-#' execute.PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
+#' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 #'
-execute.PsN <- function(command = NULL,
-                        modelFile = NULL, modelExtension = ".mod",
-                        addargs = NULL,
-                        cleanup = T, working.dir = NULL, ... ){
-  orig.dir <- getwd()
-  working.dir <- ifelse( is.null( working.dir ), getwd(), working.dir )
-  setwd( working.dir )
+execute_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".mod", addargs = NULL, 
+    cleanup = T, working.dir = NULL, ...) {
+    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
 
-  baseCommand <- ifelse(is.null(command), findExecutable("execute"), command)
-  command <- paste(baseCommand, paste(modelFile, modelExtension, sep = ""), addargs)
-  cat(paste(command, "\n"))
-  do.call(system,args=list(command=command))
-
-  if (cleanup) cleanup()
-
-  setwd(orig.dir)
-}
+    baseCommand <- ifelse(is.null(command), findExecutable("execute"), command)
+    command <- paste(baseCommand, paste(modelFile, modelExtension, sep = ""), 
+                     " --directory=", working.dir,
+                     if(cleanup) " --clean=2",
+                     addargs)
+    cat(paste(command, "\n"))
+    do.call(system, args = list(command = command))
+} 

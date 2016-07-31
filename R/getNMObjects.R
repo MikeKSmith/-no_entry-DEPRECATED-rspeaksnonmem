@@ -6,6 +6,7 @@
 #' @examples
 #' getNMObjects(foo, what='Data')
 #' getNMObjects(foo, what='All')
-getNMObjects <- function(RNMImportObject, what = c("Data", "Parameters", "TaskProperties", "All")) {
+getNMObjects <- function(RNMImportObject, what = c("Data", "Parameters", "TaskProperties", 
+    "All")) {
     ## TO BE WRITTEN
 } 
