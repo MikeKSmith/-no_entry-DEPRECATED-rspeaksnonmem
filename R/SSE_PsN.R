@@ -12,10 +12,10 @@ SSE_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".mod", n
     seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
     working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
 
-    baseCommand <- ifelse(is.null(command), findExecutable("SSE"), command)
-    command <- paste(baseCommand, shQuote(paste(modelFile, modelExtension, sep = "")), " --samples=", 
+    baseCommand <- ifelse(is.null(command), defineExecutable("SSE"), command)
+    command <- paste(baseCommand, shQuote(modelFile), " --samples=", 
         nsamp, " --seed=", seed, " ", 
-        " --directory=", working.dir,
+        " --directory=", shQuote(working.dir),
         if(cleanup) " --clean=2",
         addargs, sep = "")
     cat(paste(command, "\n"))

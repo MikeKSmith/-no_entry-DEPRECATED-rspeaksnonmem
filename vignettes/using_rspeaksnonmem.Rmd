@@ -42,32 +42,43 @@ or download the `.tar` file from [R-Forge](https://r-forge.r-project.org/R/?grou
 
 
 ## getting started
-
-Load the `rspeaksnonmem` package
-```{r,eval=FALSE}
-library(rspeaksnonmem)
+```{r setExecutables}
+perlPath <- "c:/perl516"
+PsNVersion <- "3.5.4"
+installedSoftware <- list(NONMEM = list(path = "c:/nm72", command = "nmfe72"), 
+                          execute = list(path = perlPath, command = paste("execute",PsNVersion,sep="-")), 
+                          VPC = list(path = perlPath, command = paste("VPC",PsNVersion,sep="-")), 
+                          bootstrap = list(path = perlPath, command = paste("bootstrap",PsNVersion,sep="-")), 
+                          SSE = list(path = perlPath, command = paste("SSE",PsNVersion,sep="-")), 
+                          runrecord = list(path = perlPath, command = paste("runrecord",PsNVersion,sep="-")))
 ```
+
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
 # devtools::load_all(pkg=".")
-devtools::load_code(system.file("R", package="rspeaksnonmem"))
+devtools::install(pkg=".")
 ```
 
+Load the `rspeaksnonmem` package
+```{r}
+library(rspeaksnonmem)
+```
 
 Copy an example dataset and model to a directory of your choice
 
 ```{r,results='hide',echo=T}
-# user_dir <- file.path(getwd(),"foo")
+user_dir <- "~/Working documents/rspeaksnonmem/Foo"
+setwd(user_dir)
 # dir.create(user_dir)
 # file.copy(file.path(system.file("exdata", package="rspeaksnonmem")),
 #           file.path(user_dir))
-setwd(system.file("exdata", package="rspeaksnonmem"))
+# myFilePath <- system.file("exdata", package="rspeaksnonmem")
 ```
 
-Rund the model:
+Run the model:
 
-```{r}
-estimate_NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl')
+```{r NONMEM}
+estimate_NM(modelFile='warfarin_PK_CONC_MKS.ctl')
 ```
 
 Look at the output
@@ -78,6 +89,12 @@ basicGOF_Xpose()
 setwd(cur_dir)
 ```
 
+```{r executePsN}
+execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl')
+```
+```{r bootstrapPsN}
+bootstrap_PsN(modelFile='warfarin_PK_CONC_MKS.ctl')
+```
 
 # some example text for vignettes
 

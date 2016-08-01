@@ -23,7 +23,7 @@ runRecord_PsN <- function(command = NULL, to = NULL, runRoot = "Run", modelExten
     file.copy(modelFiles, file.path(runpath))
     file.copy(lstFiles, file.path(runpath))
 
-    baseCommand <- ifelse(is.null(command), findExecutable("runrecord"), command)
+    baseCommand <- ifelse(is.null(command), defineExecutable("runrecord"), command)
     command <- paste(baseCommand, " --to=", to, " ", 
                      " --directory=", working.dir,
                      addargs, sep = "")

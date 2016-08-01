@@ -13,11 +13,11 @@ execute_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".mod
     cleanup = T, working.dir = NULL, ...) {
     working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
 
-    baseCommand <- ifelse(is.null(command), findExecutable("execute"), command)
-    command <- paste(baseCommand, paste(modelFile, modelExtension, sep = ""), 
-                     " --directory=", working.dir,
+    baseCommand <- ifelse(is.null(command), defineExecutable("execute"), command)
+    command <- paste(baseCommand, " ", shQuote(modelFile), 
+                     " --directory=", shQuote(working.dir),
                      if(cleanup) " --clean=2",
-                     addargs)
+                     " ", addargs, sep="")
     cat(paste(command, "\n"))
     do.call(system, args = list(command = command))
 } 

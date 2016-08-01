@@ -13,9 +13,9 @@ bootstrap_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".m
     seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
     working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
 
-    baseCommand <- ifelse(is.null(command), findExecutable("bootstrap"), command)
-    command <- paste(baseCommand, " ", shQuote(paste(modelFile, modelExtension, sep = "")), 
-        " --samples=", nsamp, " --seed=", seed, " ", "--directory= ", working.dir, 
+    baseCommand <- ifelse(is.null(command), defineExecutable("bootstrap"), command)
+    command <- paste(baseCommand, " ", shQuote(modelFile), 
+        " --samples=", nsamp, " --seed=", seed, " ", "--directory=", shQuote(working.dir), 
         if(cleanup) " --clean=2",
         addargs, sep = "")
     cat(paste(command, "\n"))

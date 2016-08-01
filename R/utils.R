@@ -9,8 +9,7 @@ win <- function() {
 ## call
 execute <- function(command, intern = FALSE, minimized = FALSE, invisible = TRUE) {
     args <- list(command = command, intern = intern)
-    if (win()) 
-        args <- c(args, list(minimized = minimized, invisible = invisible))
+    if (win()) args <- c(args, list(minimized = minimized, invisible = invisible))
     # cat(command, file=file.path(rdir,glue(run,'.cat')),sep='\n',append=TRUE)
     result <- tryCatch(do.call(system, args), error = function(e) warning(e$message, call. = FALSE, 
         immediate. = TRUE))
@@ -32,8 +31,7 @@ cleanup <- function(working.dir = NULL, pattern = NULL, remove.folders = F, ...)
         "FDATA", "FMSG", "fort.6", "FREPORT", "FSIZES", "FSTREAM", "FSUBS", "fsubs.f90", "fsubs.o", 
         "FSUBS.MU.F90", "GFCOMPILE.BAT", "linkc", "nmfe72", "set", "newline", "gfortran", "prsizes", 
         "trash", "compile", "matlab", "garbage.out")
-    if (length(pattern) > 0) 
-        files <- c(files, pattern)
+    if (length(pattern) > 0) files <- c(files, pattern)
     
     foo <- sapply(files, function(x) unlink(dir(pattern = x)))
     unlink(paste(getwd(), "temp_dir", sep = "/"), recursive = T)
@@ -43,8 +41,7 @@ cleanup <- function(working.dir = NULL, pattern = NULL, remove.folders = F, ...)
         all <- list.files(all.files = F, full.names = T)
         alldirs <- all[file.info(all)$isdir]
         matchdirs <- alldirs
-        if (length(pattern) > 0) 
-            matchdirs <- alldirs[grep(pattern, alldirs)]
+        if (length(pattern) > 0) matchdirs <- alldirs[grep(pattern, alldirs)]
         unlink(matchdirs, recursive = T, force = T)
     }
 } 
