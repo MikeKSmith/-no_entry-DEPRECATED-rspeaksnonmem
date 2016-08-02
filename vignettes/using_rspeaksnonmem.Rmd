@@ -42,15 +42,25 @@ or download the `.tar` file from [R-Forge](https://r-forge.r-project.org/R/?grou
 
 
 ## getting started
+`rspeaksnonmem` needs to know where NONMEM and PsN are installed on your system.
+The function defineExecutable takes this information and creates the system command line for each tool.
+Typically PsN functions are called by calling Perl with the appropriate PsN Perl script.
+If the user has NONMEM and Perl setup on their system PATH then the "path" argument can be left blank.
+This will mean that the "command" is sufficient to define how to call each tool. On Linux systems the 
+"path" argument should be left blank.
+
 ```{r setExecutables}
 perlPath <- "c:/perl516"
 PsNVersion <- "3.5.4"
-installedSoftware <- list(NONMEM = list(path = "c:/nm72", command = "nmfe72"), 
-                          execute = list(path = perlPath, command = paste("execute",PsNVersion,sep="-")), 
-                          VPC = list(path = perlPath, command = paste("VPC",PsNVersion,sep="-")), 
-                          bootstrap = list(path = perlPath, command = paste("bootstrap",PsNVersion,sep="-")), 
-                          SSE = list(path = perlPath, command = paste("SSE",PsNVersion,sep="-")), 
-                          runrecord = list(path = perlPath, command = paste("runrecord",PsNVersion,sep="-")))
+NONMEMcommand <- "nmfe72"
+
+installPaths <- c("c:/nm72", rep(perlPath,5))
+tools <- c("NONMEM", "execute", "VPC", "bootstrap", "SSE", "runrecord")
+commands <- sapply(tools, function(x) ifelse( x == "NONMEM", NONMEMcommand, paste( x, PsNVersion, sep = "-" ) ) )
+
+installedSoftware <- data.frame( cbind( tool = tools, path = installPaths, command = commands ), 
+                                 row.names=NULL, stringsAsFactors = F)
+installedSoftware
 ```
 
 
