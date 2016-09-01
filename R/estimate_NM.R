@@ -11,14 +11,15 @@
 #' estimate.NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 
 estimate_NM <- function(command = NULL, modelFile = NULL, reportExtension = ".lst", 
-    cleanup = F, working.dir = NULL, ...) {
-    # working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-
-    baseCommand <- ifelse(is.null(command), defineExecutable("nonmem"), command)
-    command <- paste(baseCommand, shQuote(modelFile), 
-                     shQuote(paste(tools::file_path_sans_ext(modelFile), reportExtension, sep = "")))
-    cat(paste(command, "\n"))
-    execute(command)
-    
-    if (cleanup) cleanup()
+                        cleanup = F, working.dir = NULL, ...) {
+  
+  baseCommand <- ifelse( is.null( command ), 
+                         defineExecutable( tool = "nonmem" , ... ) , 
+                         defineExecutable( command=command, ... ))
+  command <- paste(baseCommand, shQuote(modelFile), 
+                   shQuote(paste(tools::file_path_sans_ext(modelFile), reportExtension, sep = "")))
+  cat(paste(command, "\n"))
+  execute(command)
+  
+  if (cleanup) cleanup()
 } 

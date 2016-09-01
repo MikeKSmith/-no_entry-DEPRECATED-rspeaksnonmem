@@ -13,16 +13,29 @@
 #' @note On the Windows platform, defineExecutable assumes that the necessary file extension is .bat.
 #' On other platforms, defineExecutable uses `Sys.which( )` to determine the full path to any alias.
 #' @examples
-#' defineExecutable(tool='NONMEM')
-#' defineExecutable(tool='execute')
-#' defineExecutable(tool='VPC')
-#' do.call(system,args=list(command=defineExecutable(tool='execute')))
+#' defineExecutable(tool='NONMEM', installInfo=installedSoftware)
+#' defineExecutable(command='execute', searchCommand=F)
+#' defineExecutable(installPath="c:/nm72/", command="nmfe72", searchCommand=T)
+#' do.call(system,args=list(command=defineExecutable(command="execute-3.5.4")))
 
-defineExecutable <- function( tool = NULL, installInfo = installedSoftware ) {
-  whichSoftware <- casefold(installInfo$tool, upper = T) == casefold(tool, upper = T)
-  mySoftware <- installInfo[whichSoftware,]
+defineExecutable <- function( tool = NULL, installInfo = NULL, command=NULL, installPath=NULL, searchCommand=FALSE, ...) {
   
-  if( win() ) {
+  ## TODO review metrumrg methods for calling NONMEM runNonmem
+  
+  if( is.null(installInfo) ) {
+    if( !searchCommand ) {
+      command <- ifelse( win() , Sys.which2( command ), Sys.which( command ) )
+    }
+    else {
+      command <- dir( path = installPath, pattern = command, recursive=T, full.names=T )   
+    }
+    return(command)
+  }
+  
+  if( !is.null( installInfo ) ) {
+    whichSoftware <- casefold(installInfo$tool, upper = T) == casefold(tool, upper = T)
+    mySoftware <- installInfo[whichSoftware,]
+    
     if( !is.na( mySoftware$path ) )
       if (casefold(tool, upper = T) == "NONMEM") {
         if (mySoftware$path!="") {
@@ -31,16 +44,15 @@ defineExecutable <- function( tool = NULL, installInfo = installedSoftware ) {
           return(mySoftwareCall)
         }
       }
-    if (casefold(software, upper = T) != "NONMEM") {
+    
+    if (casefold(tool, upper = T) != "NONMEM") {
       myPath <- file.path(mySoftware$path, "bin")
       mySoftwareCall <- paste(file.path(myPath,"perl"), " ", file.path(myPath,mySoftware$command), ".pl", sep = "")
       return(mySoftwareCall)
     }
+    
     if ( is.na( mySoftware$path ) ){
       return( mySoftware$command )
     }
-  }
-  if( !win() ) {
-    return(Sys.which( mySoftware$command ) )
-  }
-} 
+  } 
+}

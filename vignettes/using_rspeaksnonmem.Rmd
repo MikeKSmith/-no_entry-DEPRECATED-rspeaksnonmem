@@ -11,13 +11,13 @@ vignette: >
 
 `rspeaksnonmem` is designed to allow the user to craft workflows based on a given NONMEM model.
 
-After importing and parsing a control stream to an R object (using the `RNMImport` package), `rspeaksnonmem` allows the user to easily change initial estimates, change data attributes or change task properties (estimation or simulation settings) without having to change the model. This saves a lot of textual searching by the user. The resulting data, parameter,
-model and task information is then written back out to file using an existing (possibly the original) model as a 
-template.
-
-`rspeaksnonmem` also allows the user to run NONMEM models from R either directly running the nmfe.bat or by
-calling [Perl speaks NONMEM](http://psn.sourceforge.net) functions like "execute". Other PsN functions can be run from
+`rspeaksnonmem` allows the user to run NONMEM models from R either directly running the nmfe.bat or by
+calling [Perl speaks NONMEM](http://psn.sourceforge.net) (PsN) functions like "execute". Other PsN functions can be run from
 R - VPC (Visual Predictive Check), bootstrap, SSE (Stochastic Simulation and Estimation).
+
+After importing and parsing a control stream to an R object using the `RNMImport` package, `rspeaksnonmem` allows the user to easily change initial estimates, change data attributes or change task properties (estimation or simulation settings) without having to change the model. This saves a lot of textual searching by the user. The resulting data, parameter,
+model and task information is then written back out to file using an existing (possibly the original) model as a 
+template. This ensures that the written NONMEM control stream mirrors as closely as possible the structure of the original file.
 
 ## Installation
 
@@ -42,20 +42,21 @@ or download the `.tar` file from [R-Forge](https://r-forge.r-project.org/R/?grou
 
 
 ## getting started
-`rspeaksnonmem` needs to know where NONMEM and PsN are installed on your system.
-The function defineExecutable takes this information and creates the system command line for each tool.
-Typically PsN functions are called by calling Perl with the appropriate PsN Perl script.
-If the user has NONMEM and Perl setup on their system PATH then the "path" argument can be left blank.
-This will mean that the "command" is sufficient to define how to call each tool. On Linux systems the 
-"path" argument should be left blank.
+In order to execute NONMEM or PsN `rspeaksnonmem` needs to know where these tools are installed on your system.
+The function defineExecutable creates the system command line for each tool by either referencing the tool name against 
+an `installInfo` configuration file consisting of tool name, installation path and command e.g. "nonmem", "c:/nm72", "nmfe72.bat"; alternatively by searching for whether a command is configured on the system path; or by simply searching for executable files below an installation directory.
+
+On Linux systems the "command" argument should provide the full path to the executable or define the command applicable
+for running the tool at the system prompt. On Linux systems the "path" information on the configuration file may be left 
+blank.
 
 ```{r setExecutables}
 perlPath <- "c:/perl516"
 PsNVersion <- "3.5.4"
 NONMEMcommand <- "nmfe72"
 
-installPaths <- c("c:/nm72", rep(perlPath,5))
-tools <- c("NONMEM", "execute", "VPC", "bootstrap", "SSE", "runrecord")
+tools <- c("NONMEM", "execute", "VPC", "bootstrap", "SSE", "runrecord", "sumo")
+installPaths <- c("c:/nm72", rep(perlPath,length(tools)-1))
 commands <- sapply(tools, function(x) ifelse( x == "NONMEM", NONMEMcommand, paste( x, PsNVersion, sep = "-" ) ) )
 
 installedSoftware <- data.frame( cbind( tool = tools, path = installPaths, command = commands ), 
@@ -65,8 +66,7 @@ installedSoftware
 
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
-# devtools::load_all(pkg=".")
-devtools::install(pkg=".")
+ devtools::load_all(pkg=".")
 ```
 
 Load the `rspeaksnonmem` package
@@ -77,33 +77,62 @@ library(rspeaksnonmem)
 Copy an example dataset and model to a directory of your choice
 
 ```{r,results='hide',echo=T}
-user_dir <- "~/Working documents/rspeaksnonmem/Foo"
-setwd(user_dir)
-# dir.create(user_dir)
-# file.copy(file.path(system.file("exdata", package="rspeaksnonmem")),
-#           file.path(user_dir))
-# myFilePath <- system.file("exdata", package="rspeaksnonmem")
+getwd()
+
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_PK_CONC_MKS.ctl"),
+            to = getwd(), overwrite=T )
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_conc_pca.csv"),
+            to = getwd(), overwrite=T )
 ```
 
-Run the model:
+```estimate_NM``` runs NONMEM for a given modelFile. The ```installInfo``` argument holds configuration information
+for each tool (shown above) which is used to create the command for the system prompt. The ```cleanup``` argument deletes
+ancillary files from the working directory.
 
-```{r NONMEM}
-estimate_NM(modelFile='warfarin_PK_CONC_MKS.ctl')
+```{r NONMEM }
+estimate_NM(modelFile="warfarin_PK_CONC_MKS.ctl", installInfo=installedSoftware, cleanup=T)
+```
+
+```{r Sumo }
+sumo_PsN(listFile="warfarin_PK_CONC_MKS.lst", installInfo=installedSoftware)
 ```
 
 Look at the output
 ```{r,message=F}
-cur_dir <- getwd()
-setwd(user_dir)
-basicGOF_Xpose()
-setwd(cur_dir)
+basicGOF_Xpose(modfile="warfarin_pk_conc_mks.ctl", listfile="warfarin_pk_conc_mks.lst")
 ```
 
-```{r executePsN}
-execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl')
+The `defineExecutable` function used by ```estimate_NM``` and PsN calling functions will search for specified command 
+executables at the system prompt:
+```{r defineExecutable }
+defineExecutable(command = "execute-3.5.4")
 ```
-```{r bootstrapPsN}
-bootstrap_PsN(modelFile='warfarin_PK_CONC_MKS.ctl')
+or it can search for suitable executables in a specified path:
+```{r defineExecutable2}
+defineExecutable(command = "nmfe72", installPath = "c:/nm72/", searchCommand = T)
+```
+
+The PsN functions work in an analogous way. Here we use ```execute_PsN``` to run estimation, but using PsN's additional 
+functionality for restarting, tweaking initial estimates etc. Additional arguments used for PsN can be passed through the
+```addargs``` argument to the function:
+
+```{r executePsN}
+execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', command="execute-3.5.4", addargs="-tweak_inits -retries=3")
+```
+Next we can perform VPC using PsN:
+```{r VPC_PsN}
+VPC_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', installInfo=installedSoftware, 
+              nsamp=100, seed=54321)
+```
+
+and then use the Xpose function xpose_vpc to plot the result:
+```{r plot_VPC}
+
+```
+
+```{r bootstrap_PsN}
+bootstrap_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', installInfo=installedSoftware, 
+              nsamp=20, seed=54321)
 ```
 
 # some example text for vignettes
