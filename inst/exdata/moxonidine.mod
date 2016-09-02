@@ -1,14 +1,9 @@
-$PROBLEM MOXONIDINE PK, FINAL ESTIMATES, ALL DATA
-;;
-;; Final model for Moxonidine
-;;
-$INPUT      ID VISI XAT2=DROP DGRP=DROP DOSE=DROP FLAG=DROP ONO=DROP
-            XIME=DROP DVO=DROP NEUY=DROP SCR AGE SEX NYHA WT
-            DROP ACE DIG DIU NUMB=DROP TAD TIME VIDD=DROP CLCR AMT SS 
-            II DROP CMT=DROP CONO=DROP DV EVID=DROP OVID=DROP
-            DROP SHR2=DROP
-$DATA       mx19_1.csv IGNORE=@
-
+$PROBLEM run1.mod run1.ctl MOXONIDINE PK ANALYSIS
+$INPUT      ID PAT=DROP VISI XAT2=DROP DGRP=DROP DOSE=DROP FLAG=DROP ONO=DROP
+            XIME=DROP DVO=DROP NEUY=DROP SCR=DROP AGE SEX NYHA=DROP WT
+            COMP ACE DIG DIU NUMB=DROP TAD TIME VIDD=DROP CLCR AMT SS
+            II VID CMT=DROP CONO=DROP DV EVID=DROP OVID=DROP RGRP
+$DATA mx2007.csv IGNORE=@
 $SUBROUTINE ADVAN2 TRANS1
 $PK
 
@@ -25,12 +20,13 @@ $PK
 
 ;---------- PK model ------------------
 
-   TVCL  = THETA(1)*(1+THETA(6)*(CLCR-65))
+   TVCL  = THETA(1)*(1+THETA(7)*(CLCR-65))
    TVV   = THETA(2)*WT
+   TVKA  = THETA(3)
 
    CL    = TVCL*EXP(ETA(1)+KPCL)
-   V     = TVV*EXP(ETA(2))
-   KA    = THETA(3)*EXP(ETA(3)+KPKA)
+   V     = TVV*EXP(ETA(2))  
+   KA    = TVKA*EXP(ETA(3)+KPKA)
    ALAG1 = THETA(4)
    K     = CL/V
    S2    = V
@@ -38,33 +34,38 @@ $PK
 $ERROR
 
      IPRED = LOG(.025)
-     W     = THETA(5)
      IF(F.GT.0) IPRED = LOG(F)
+     W     = (THETA(6) + THETA(5)/IPRED) ;* EXP(ETA(8))
      IRES  = IPRED-DV
      IWRES = IRES/W
-     Y     = IPRED+ERR(1)*W
+     Y     = IPRED+EPS(1)*W
 
-$THETA  (0,26.6)              ;TVCL
-$THETA  (0,1.43)              ;TVV
-$THETA  (0,4.45)              ;TVKA
-$THETA  (0,.240)              ;LAG
-$THETA  (0,.33)               ;RES ERR
-$THETA  (0,.00758,.02941)     ;CRCL on CL
+$THETA  (0,27.1)              ;TVCL        ; 1
+$THETA  (0,1.49)              ;TVV         ; 2 ;This is in L per kg WT
+$THETA  (0,3.52)              ;TVKA        ; 3
+$THETA  (0,.227)              ;LAG         ; 4
+$THETA  0 FIX                 ;Add.err     ; 5
+$THETA  (0,.343)              ;Prop.err    ; 6
+$THETA  (0,.00646,.02941)     ;CRCL.on.CL  ; 7
 
-$OMEGA  BLOCK(2) 0.0444 0.027 0.0241    ; IIV (CL-V)
-$OMEGA  BLOCK(1) 3.0                    ; IIV KA
+$OMEGA  BLOCK(2) 0.0489       ;IIV.CL      ; 1
+                 0.0256       ;COV.ETA.CL.V; 1-2
+                 0.0156       ;IIV.V       ; 2
+$OMEGA  BLOCK(1) 1.98         ;IIV.KA      ; 3
+$OMEGA  BLOCK(1) 0.013        ;IOV.CL      ; 4
+$OMEGA  BLOCK(1) SAME         ;IOV.CL.2    ; 5 
+$OMEGA  BLOCK(1) 0.0481       ;IOV.KA      ; 6
+$OMEGA  BLOCK(1) SAME         ;IOV.KA.2    ; 7
+;$OMEGA          0.001        ;IIV.EPS     ; 8
 
-$OMEGA  BLOCK(1) 0.0165        ; IOV CL
-$OMEGA  BLOCK(1)  SAME         ; IOV CL
-
-$OMEGA  BLOCK(1)  0.495        ; IOV KA
-$OMEGA  BLOCK(1)  SAME         ; IOV KA
-
-$SIGMA  1  FIX
-
-$ESTIMATION METHOD=1  MAXEVALS=9999 FORMAT=s1PE20.10 NSIG=3
+$SIGMA  1  FIX                ;ResFixed    ; 1
+$ESTIMATION METHOD=1 MAXEVALS=9999 PRINT=1 MSFO=msf1
 ;$COVARIANCE PRINT=E
-$TABLE ID TIME IPRED IWRES CWRES                                      NOPRINT ONEHEADER FILE=sdtab1
-$TABLE ID CL V KA ETA(1) ETA(2) ETA(3) ETA(4) ETA(5) ETA(6) ETA(7)    NOPRINT NOAPPEND ONEHEADER FILE=patab1
-$TABLE ID AGE SEX ACE DIG DIU NYHA SCR CLCR WT                        NOPRINT NOAPPEND ONEHEADER FILE=cotab1
+
+$TAB ID TAD IPRED IWRES CWRES               ONEHEADER NOPRINT FILE = sdtab1
+$TAB ID ETA1 ETA2 ETA3 ETA4 ETA5 ETA6 ETA7  ONEHEADER NOPRINT FILE = patab1 NOAPPEND
+$TAB ID AGE WT CLCR                         ONEHEADER NOPRINT FILE = cotab1 NOAPPEND
+$TAB ID SEX ACE DIG DIU COMP VISI           ONEHEADER NOPRINT FILE = catab1 NOAPPEND
+
+
 
