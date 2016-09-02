@@ -29,7 +29,7 @@ runRecord_PsN <- function(command = NULL, to = NULL, runRoot = "Run", modelExten
                          defineExecutable( command=command, ... ))
   
   command <- paste(baseCommand, " --to=", to, " ", 
-                   " --directory=", working.dir,
+                   " --directory=", working.dir, " ",
                    addargs, sep = "")
   cat(paste(command, "\n"))
   execute(command)

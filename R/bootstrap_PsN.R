@@ -20,7 +20,7 @@ bootstrap_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".m
   
   command <- paste(baseCommand, " ", shQuote(modelFile), 
                    " --samples=", nsamp, " --seed=", seed, " ", "--directory=", shQuote(working.dir), 
-                   if(cleanup) " --clean=2",
+                   if(cleanup) " --clean=2", " ",
                    addargs, sep = "")
   cat(paste(command, "\n"))
   execute(command)
