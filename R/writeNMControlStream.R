@@ -6,12 +6,14 @@
 #' @param modelExtension
 #' @param modelBlockNames
 #' @return NONMEM estimation output files
+#' @note RNMImport does not currently parse PRIOR blocks. So we treat these as part of the modelBlockNames
+#' and return the contents of this block unchanged.
 #' @examples
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 #'### ----writeNMControlStream: Write out a parsed Model as a NONMEM control stream
 
 writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelExtension = ".mod", 
-                                 modelBlockNames = c("PK", "PRE", "SUB", "MOD", "DES", "ERR")) {
+                                 modelBlockNames = c("PK", "PRE", "SUB", "MOD", "DES", "ERR","PRI")) {
   
   ### Get RAW NM control stream items
   control <- templateModel
@@ -209,7 +211,7 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   
   ## Prepare $OMEGA for printings
   
-  control2$Omega <- print(unlist(control2$Omega, as.character))
+  control2$Omega <- unlist(control2$Omega, as.character)
   
   ## Check for existence of $Tables in original code
   if (length(control2$Tables)) {
@@ -226,6 +228,11 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
     control2$Tables <- Tables
   }
   
+  ## Ensure that multiple $EST case has $EST for each line 
+  ## First $Table statement doesn't need '$Table' since it comes from ctrlmerged if present
+  control2$Estimates <- paste("\n$EST", control2$Estimates)
+  control2$Estimates[1] <- sub("^\\\n\\$EST ", "", control2$Estimates[1], perl = T)
+  
   control3 <- list(NULL)
   for (i in 1:nrow(ctrlmerged)) {
     if (ctrlmerged$block.id[i] %in% otherBlocks$block.id) 
@@ -234,7 +241,6 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
       control3[[i]] <- modelBlockCode[[ctrlmerged$orig.block[i]]]
     names(control3)[[i]] <- ctrlmerged$orig.block[i]
   }
-  
   
   ##################################### Writing out the control statements
   
@@ -249,7 +255,7 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   ctrlmerged$orig.block[special] <- paste(ctrlmerged$orig.block[special], "\n")
   ctrlmerged$orig.block[model] <- ""
   
-  sink(file = paste(modelFile, modelExtension, sep = ""))
+  sink(file = paste(modelFile, modelExtension, sep = "."))
   for (i in 1:nrow(ctrlmerged)) {
     if (!ctrlmerged$block.id[i] %in% modelBlockNames) 
       cat(paste("$", ctrlmerged$orig.block[i], " ", sep = ""))
