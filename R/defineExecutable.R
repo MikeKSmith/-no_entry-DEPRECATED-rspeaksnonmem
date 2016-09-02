@@ -1,8 +1,12 @@
 #' Finds the appropriate command line for execution
 #'
 #' @param tool Name of tool e.g. NONMEM, VPC, bootstrap, SSE etc.
-#' @param installInfo A named list containing path and command line string / shortcut.
-#' List names should match software names.
+#' @param installInfo A named list or data frame containing path and command line string / shortcut.
+#' List names should match software names. Acts as a lookup table for specifying commands.
+#' @param command Command which will be executed at a shell prompt e.g. execute-3.5.4 or nmfe72.bat.
+#' Use this instead of tool + installInfo to specify precisely what command to run at the shell prompt.
+#' @param installPath Path to the installation of NONMEM or PsN
+#' @param searchCommand (Boolean) Whether to search for .bat or .exe files matching the command. 
 #' @return path to the executable (.bat file on Windows or command on other platforms)
 #' @details defineExecutable can help the user find the correct command line for use with `system( )`.
 #' rspeaksnonmem contains a named list called installedSoftware that includes installation path and
@@ -10,8 +14,11 @@
 #'
 #' The user can specify the command line explicitly in each function e.g. `execute_PsN(command='c:/perl516/bin/execute.bat',...)`
 #' but defineExecutable provides an automated means to construct that command line.
-#' @note On the Windows platform, defineExecutable assumes that the necessary file extension is .bat.
-#' On other platforms, defineExecutable uses `Sys.which( )` to determine the full path to any alias.
+#' @note * Using the "command" option instead of specifying "tool" and "installInfo" will perform a check
+#' of whether the command is valid using the R function Sys.which.
+#' * Using the searchCommand option may return more than one executable. It is recommended to 
+#' run defineExecutable with searchCommand = TRUE to determine which executable is suitable for use 
+#' BEFORE using this option in estimate_NM or PsN execution functions.
 #' @examples
 #' defineExecutable(tool='NONMEM', installInfo=installedSoftware)
 #' defineExecutable(command='execute', searchCommand=F)

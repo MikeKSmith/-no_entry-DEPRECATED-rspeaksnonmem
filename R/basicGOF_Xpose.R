@@ -10,7 +10,7 @@ basicGOF_Xpose <- function(runno = NULL, ...) {
     if (!length(runno) > 0) runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
     
     ## ----createXpdb----------------------------------------------------------
-    xpdb <- xpose4::xpose.data(runno)
+    xpdb <- xpose4::xpose.data(runno, quiet = T)
     # save(base.xpdb, file='Xpose database.RData')
     
     ## ----xposeGOF------------------------------------------------------------
