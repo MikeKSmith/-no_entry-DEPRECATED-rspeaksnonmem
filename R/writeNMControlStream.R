@@ -10,12 +10,18 @@
 #' and return the contents of this block unchanged.
 #' @examples
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
-#'### ----writeNMControlStream: Write out a parsed Model as a NONMEM control stream
+#' @export
 
 writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelExtension = ".mod", 
                                  modelBlockNames = c("PK", "PRE", "SUB", "MOD", "DES", "ERR","PRI")) {
   
-  ### Get RAW NM control stream items
+  #########################################################
+  ###
+  ###   Identify position of model elements in template
+  ###   compared to RNMImport sequence
+  ###
+  #########################################################
+  
   control <- templateModel
   
   ### Where do the various block statements occur?
@@ -63,6 +69,8 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
     
     codeLines <- control[modelStart:modelEnd]
     codeLines <- paste(codeLines, "\n")
+    ## Last line doesn't need the line break
+    codeLines[length(codeLines)] <- sub("\\n","",codeLines[length(codeLines)])
     modelBlockCode[[i]] <- codeLines
     names(modelBlockCode)[[i]] <- modelBlocks$orig.block[i]
   }
@@ -84,83 +92,115 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
     }
   }
   
+  #########################################################
+  ###
+  ###   THETA
+  ###
+  #########################################################
+  
   ### Change $THETA -Inf and Inf values to missing Change $THETA values = 0 to '0 FIX'
-  control2$Theta <- formatC(control2$Theta)
-  control2$Theta <- apply(control2$Theta, 2, function(x) sub("^ *Inf", NA, x))
-  control2$Theta <- apply(control2$Theta, 2, function(x) sub("^ *-Inf", NA, x))
-  control2$Theta[control2$Theta[, 1] == control2$Theta[, 3], c(1, 3)] <- NA
-  control2$Theta[control2$Theta[, 2] == 0, c(1, 3)] <- NA
-  control2$Theta[control2$Theta[, 2] == 0, 2] <- "0 FIX"
+  Theta <- formatC(as.matrix(control2$Theta[,c("Lower","Est","Upper")]))
+  Theta <- apply(Theta, 2, function(x) sub("^ *Inf", NA, x))
+  Theta <- apply(Theta, 2, function(x) sub("^ *-Inf", NA, x))
   
-  ### Change $OMEGA values = 0 to '0 FIX' THIS NEEDS WORK!!!  Turn Omega matrix into diagonal
-  ### etc.  and handle block structures
+  ## If initial value is zero then it must be fixed. NONMEM initial values cannot be zero.
+  # control2$Theta[Theta[, 2] == 0, "FIX"] <- TRUE
   
-  Omega <- NULL
-  
-  ## Are only diagonals filled??
-  OmegaDiag <- sum(control2$Omega[lower.tri(control2$Omega, diag = F)]) == 0
-  if (OmegaDiag) {
-    Omega.blocksize <- NULL
-    Omega <- diag(control2$Omega)
-    Omega[Omega == 0] <- "0 FIX"
-    Omega <- sapply(Omega, function(x) paste(x, "\n"))
-  }
-  if (!OmegaDiag) {
-    ## Which Omegas are BLOCK
-    Corr <- (apply(control2$Omega, 2, sum) - diag(control2$Omega)) != 0
-    block <- paste("BLOCK(", sum(Corr), ")\n", sep = "")
-    Omega1 <- control2$Omega[Corr, Corr]
-    Omega.1 <- paste(Omega1[lower.tri(Omega1, diag = T)], "\n")
-    Omega <- list(block, Omega.1)
-    if (sum(Corr) != length(diag(control2$Omega))) {
-      Omega.2 <- diag(control2$Omega[!Corr, !Corr])
-      Omega.2[Omega.2 == 0] <- "0 FIX"
-      Omega.2 <- sapply(Omega.2, function(x) paste(x, "\n"))
-      Omega <- list(block, Omega.1, "\n$OMEGA\n", Omega.2)
-    }
-  }
-  
-  ## Overwrite control2$Omega with Omega above.
-  control2$Omega <- Omega
-  names(control2$Omega) <- NULL
-  
-  Sigma <- NULL
-  
-  ## Are only diagonals filled??
-  sigmaVector <- is.vector(control2$Sigma)
-  if (sigmaVector) {
-    Sigma <- control2$Sigma
-    Sigma[Sigma == 0] <- "0 FIX"
-    Sigma <- sapply(Sigma, function(x) paste(x, "\n"))
-  }
-  if (!sigmaVector) {
-    SigmaDiag <- sum(control2$Sigma[lower.tri(control2$Sigma, diag = F)]) == 0
-    if (SigmaDiag) {
-      Sigma.blocksize <- NULL
-      Sigma <- diag(control2$Sigma)
-      Sigma[Sigma == 0] <- "0 FIX"
-      Sigma <- sapply(Sigma, function(x) paste(x, "\n"))
-    }
-    if (!SigmaDiag) {
-      ## Which Sigmas are BLOCK
-      Corr <- (apply(control2$Sigma, 2, sum) - diag(control2$Sigma)) != 0
-      block <- paste("BLOCK(", sum(Corr), ")\n", sep = "")
-      Sigma1 <- control2$Sigma[Corr, Corr]
-      Sigma.1 <- paste(Sigma1[lower.tri(Sigma1, diag = T)], "\n")
-      Sigma <- list(block, Sigma.1)
-      if (sum(Corr) != length(diag(control2$Sigma))) {
-        Sigma.2 <- diag(control2$Sigma[!Corr, !Corr])
-        Sigma.2[Sigma.2 == 0] <- "0 FIX"
-        Sigma.2 <- sapply(Sigma.2, function(x) paste(x, "\n"))
-        Sigma <- list(block, Sigma.1, "\n$Sigma\n", Sigma.2)
+  ## Prepare for printing out
+  ## Combine $THETA bounds into usual NONMEM format e.g. (0, 0.5, ) OR 0.5 OR (,0.5,1000)
+  Theta.txt <- NULL
+  for (i in 1 : nrow(Theta) ){
+    ## Handle FIXED Thetas
+    if (control2$Theta[i,"FIX"]){
+      Theta.txt[i] <- paste(Theta[i,2],"FIX")
+    } else {
+      ## Handle THETAs where only a single value is given for inits
+      if ( is.na( Theta[i,1] ) & is.na( Theta[i,3] ) ){
+        Theta.txt[i] <- Theta[i, 2]   
+      } else {
+        ## Else create lower and/or upper bounded THETAs
+        Theta.txt[i] <- paste("(", paste(Theta[i,], collapse = ","), ")")
+        Theta.txt[i] <- gsub("NA", "", Theta.txt[i])
       }
     }
   }
   
-  control2$Sigma <- Sigma
-  names(control2$Sigma) <- NULL
+  Theta.txt <- paste(Theta.txt, ";", control2$Theta[,"comments"])
+  thetaBlockName <- paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Theta"],sep="")
+  control2$Theta <- paste(paste(thetaBlockName,"\n",sep=""),paste(Theta.txt, collapse="\n"))
   
-  #################################################################### PREPARE ITEMS IN CONTROL2 FOR WRITING OUT
+  #########################################################
+  ###
+  ###   OMEGA
+  ###
+  #########################################################
+  
+  Omega.txt <- NULL
+  for (i in 1:length( control2$Omega ) ){
+    x <- control2$Omega[[i]]
+    if ( !is.null( x$block ) ){
+      ## Print BLOCK(n)
+      ## If SAME then don't print values just text
+      block <- paste( paste("$OMEGA BLOCK(", x$block, ")", sep=""),if( x$SAME) "SAME","\n")
+      if (!x$SAME){
+        x$values[upper.tri(x$values)] <- ""
+        x$values <- as.data.frame(x$values)
+        values <- ifelse(!x$SAME,paste( apply( x$values, 1, paste, collapse=" "), collapse = "\n" ), NULL)
+      }
+      ## If FIX then add this
+      fixed <- ifelse( x$FIX , "FIX \n" , "\n")
+      Omega.txt[[i]] <- paste0(list(block, values, fixed),collapse="")
+    } else { 
+      y <- data.frame(x)
+      y$FIX <- ifelse(x$FIX, "FIX", "")
+      y$comments <- ifelse( !is.na(x$comments), paste(";",x$comments), "" )
+      out <- apply(y, 1, paste, collapse=" ")
+      omegaBlockName <-  paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Omega"],sep="")
+      Omega.txt[[i]] <- paste(paste(omegaBlockName,"\n",sep=""),paste(out,collapse=" \n"))
+    }
+  }
+  Omega.txt <- paste( Omega.txt, collapse = "" )
+  
+  ## Overwrite control2$Omega with Omega above.
+  control2$Omega <- Omega.txt
+  
+  #########################################################
+  ###
+  ###   SIGMA
+  ###
+  #########################################################
+  
+  Sigma.txt <- NULL
+  
+  for (i in 1:length( control2$Sigma ) ){
+    x <- control2$Sigma[[i]]
+    if ( !is.null( x$block ) ){
+      ## Print BLOCK(n)
+      ## If SAME then don't print values just text
+      block <- paste( paste("$SIGMA BLOCK(", x$block, ")", sep=""),if( x$SAME) "SAME","\n")
+      x$values[upper.tri(x$values)] <- ""
+      x$values <- as.data.frame(x$values)
+      values <- ifelse(!x$SAME,paste( apply( x$values, 1, paste, collapse=" "), collapse = "\n" ), NULL)
+      ## If FIX then add this
+      fixed <- ifelse( x$FIX , "FIX \n" , "\n")
+      Sigma.txt[[i]] <- paste0(list(block, values, fixed),collapse="")
+    } else { 
+      y <- data.frame(x)
+      y$FIX <- ifelse(x$FIX, "FIX", "")
+      y$comments <- ifelse( !is.na(y$comments), paste(";",y$comments), "")
+      out <- apply(y, 1, paste, collapse=" ")
+      sigmaBlockName <-  paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Sigma"],sep="")
+      Sigma.txt[[i]] <- paste(paste(sigmaBlockName,"\n",sep=""), paste(out,collapse=" \n"))
+    }
+  }
+  Sigma.txt <- paste( Sigma.txt, collapse = "" )
+  control2$Sigma <- Sigma.txt
+  
+  #########################################################
+  ###
+  ###   PREPARE FOR WRITING OUT
+  ###
+  #########################################################
   
   ## $INPUT records - Paste together the variables names and labels e.g. SID=ID TIME=TIME
   ## AMT=AMT BWT=DROP MDV=MDV DV=DV More detail than necessary / usual, but consistent with
@@ -175,7 +215,9 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
                                                                                   "Label"], sep = "=")
   }
   
-  control2$Input <- Input
+  control2$Input <- paste( paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Input"],sep="")," ",
+                           paste(Input, collapse=" ")
+  )
   
   ## $DATA records - Paste together commands and attributes e.g. THEO.DAT IGNORE=# etc.
   
@@ -195,50 +237,39 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
     
     Data <- c(control2$Data[1], ignoreAccept)
   }
-  control2$Data <- Data
+  control2$Data <- paste( paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Data"],sep="")," ",
+                          paste(Data, collapse=" ")
+  )
   
   ## Omit Data file commands that have no attributes
-  
-  ## Combine $THETA bounds into usual NONMEM format e.g. (0, 0.5, ) OR 0.5 OR (,0.5,1000)
-  Theta <- paste("(", apply(control2$Theta, 1, function(x) {
-    paste(x, collapse = ",")
-  }), ")\n")
-  Theta <- gsub("NA", "", Theta)
-  Theta[is.na(control2$Theta[, 1]) & is.na(control2$Theta[, 3])] <- paste(control2$Theta[is.na(control2$Theta[, 
-                                                                                                              1]) & is.na(control2$Theta[, 3]), 2], "\n")
-  
-  control2$Theta <- Theta
-  
-  ## Prepare $OMEGA for printings
-  
-  control2$Omega <- unlist(control2$Omega, as.character)
   
   ## Check for existence of $Tables in original code
   if (length(control2$Tables)) {
     ## Collect $TABLE variable strings, delete comma separator, append ONEHEADER NOPRINT
     ## statements
+    tableBlockName <- paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Tables"],sep="") 
     Tables <- apply(control2$Table, 1, function(x) {
-      paste("$TABLE ", gsub(",", "", x[2]), " ONEHEADER NOPRINT FILE=", x[1], "\n", sep = "")
+      paste( tableBlockName, " ",
+             gsub(",", "", x[2]), " ONEHEADER NOPRINT FILE=", x[1], sep = "")
     })
-    ## First $Table statement doesn't need '$Table' since it comes from ctrlmerged if present
-    if (!is.na(ctrlmerged$orig.block[ctrlmerged$block.id == "TAB"])) 
-      Tables[1] <- sub("^\\$TABLE", "", Tables[1], perl = T)
     Tables <- gsub("ETA\\.", "ETA\\(", Tables, perl = T)
     Tables <- gsub("\\.", "\\)", Tables, perl = T)
-    control2$Tables <- Tables
   }
+  control2$Tables <- paste(Tables, collapse="\n")
   
   ## Ensure that multiple $EST case has $EST for each line 
   ## First $Table statement doesn't need '$Table' since it comes from ctrlmerged if present
-  control2$Estimates <- paste("\n$EST", control2$Estimates)
-  control2$Estimates[1] <- sub("^\\\n\\$EST ", "", control2$Estimates[1], perl = T)
+  estBlockName <- paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Estimates"],sep="")
+  control2$Estimates <- paste(estBlockName, paste(control2$Estimates, collapse=paste("\n",estBlockName,sep="")))
+  
+  control2$Problem <- paste(paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Problem"],sep=""), control2$Problem)
   
   control3 <- list(NULL)
   for (i in 1:nrow(ctrlmerged)) {
     if (ctrlmerged$block.id[i] %in% otherBlocks$block.id) 
       control3[[i]] <- control2[[ctrlmerged$RNMI.block[i]]]
     if (ctrlmerged$block.id[i] %in% modelBlockNames) 
-      control3[[i]] <- modelBlockCode[[ctrlmerged$orig.block[i]]]
+      control3[[i]] <- paste(modelBlockCode[[ctrlmerged$orig.block[i]]],collapse="")
     names(control3)[[i]] <- ctrlmerged$orig.block[i]
   }
   
@@ -248,18 +279,11 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   ### NONMEM HELP GUIDES?  FOR NOW BASED ON ORDER IN ORIGINAL NM CODE IF ITEMS ADDED THROUGH
   ### updateMOG(...) THEN ADD THESE AT THE END?  USUALLY TABLE ITEMS
   
-  ## 'special' blocks need $ statement on one line and content below
-  special <- is.element(ctrlmerged$block.id, c("PK", "PRED", "ERR", "THE", "OME", "SIG", 
-                                               "DES", "MOD"))
   model <- is.element(ctrlmerged$block.id, modelBlockNames)
-  ctrlmerged$orig.block[special] <- paste(ctrlmerged$orig.block[special], "\n")
-  ctrlmerged$orig.block[model] <- ""
   
   sink(file = paste(modelFile, modelExtension, sep = "."))
   for (i in 1:nrow(ctrlmerged)) {
-    if (!ctrlmerged$block.id[i] %in% modelBlockNames) 
-      cat(paste("$", ctrlmerged$orig.block[i], " ", sep = ""))
-    cat(paste(cat(control3[[i]]), "\n"))
+    cat(paste("\n",control3[[i]]))
   }
   sink()
-} 
+  } 
