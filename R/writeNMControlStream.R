@@ -135,33 +135,34 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   #########################################################
   
   Omega.txt <- NULL
-  control2$Omega$initialMatrix <- NULL
-  for (i in 1:length( control2$Omega ) ){
-    x <- control2$Omega[[i]]
-    if ( !is.null( x$block ) ){
-      ## Print BLOCK(n)
-      ## If SAME then don't print values just text
-      x$block <- paste( paste("$OMEGA BLOCK(", x$block, ")", sep=""),if( x$SAME) "SAME","\n")
-      if (!x$SAME){
-        x$values[upper.tri(x$values)] <- ""
-        x$values <- as.data.frame(x$values)
-        x$values <- ifelse(!x$SAME,paste( apply( x$values, 1, paste, collapse=" "), collapse = "\n" ), NULL)
+  if(!is.null(control2$Omega)){
+    control2$Omega$initialMatrix <- NULL
+    for (i in 1:length( control2$Omega ) ){
+      x <- control2$Omega[[i]]
+      if ( !is.null( x$block ) ){
+        ## Print BLOCK(n)
+        ## If SAME then don't print values just text
+        x$block <- paste( paste("$OMEGA BLOCK(", x$block, ")", sep=""),if( x$SAME) "SAME","\n")
+        if (!x$SAME){
+          x$values[upper.tri(x$values)] <- ""
+          x$values <- as.data.frame(x$values)
+          x$values <- ifelse(!x$SAME,paste( apply( x$values, 1, paste, collapse=" "), collapse = "\n" ), NULL)
+        }
+        if (x$SAME) { x$values <- ""}
+        ## If FIX then add this
+        x$FIX <- ifelse( x$FIX , "FIX \n" , "\n")
+        Omega.txt[[i]] <- paste0(list(x$block, x$values, x$FIX),collapse="")
+      } else { 
+        y <- data.frame(x)
+        y$FIX <- ifelse(x$FIX, "FIX", "")
+        y$comments <- ifelse( !is.na(x$comments), paste(";",x$comments), "" )
+        out <- apply(y, 1, paste, collapse=" ")
+        omegaBlockName <-  paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Omega"],sep="")
+        Omega.txt[[i]] <- paste(paste(omegaBlockName,"\n",sep=""),paste(out,collapse=" \n"))
       }
-      if (x$SAME) { x$values <- ""}
-      ## If FIX then add this
-      x$FIX <- ifelse( x$FIX , "FIX \n" , "\n")
-      Omega.txt[[i]] <- paste0(list(x$block, x$values, x$FIX),collapse="")
-    } else { 
-      y <- data.frame(x)
-      y$FIX <- ifelse(x$FIX, "FIX", "")
-      y$comments <- ifelse( !is.na(x$comments), paste(";",x$comments), "" )
-      out <- apply(y, 1, paste, collapse=" ")
-      omegaBlockName <-  paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Omega"],sep="")
-      Omega.txt[[i]] <- paste(paste(omegaBlockName,"\n",sep=""),paste(out,collapse=" \n"))
     }
+    Omega.txt <- paste( Omega.txt, collapse = "" )
   }
-  Omega.txt <- paste( Omega.txt, collapse = "" )
-  
   ## Overwrite control2$Omega with Omega above.
   control2$Omega <- Omega.txt
   
@@ -172,32 +173,34 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   #########################################################
   
   Sigma.txt <- NULL
-  control2$Sigma$initialMatrix <- NULL
-  for (i in 1:length( control2$Sigma ) ){
-    x <- control2$Sigma[[i]]
-    if ( !is.null( x$block ) ){
-      ## Print BLOCK(n)
-      ## If SAME then don't print values just text
-      x$block <- paste( paste("$SIGMA BLOCK(", x$block, ")", sep=""),if( x$SAME) "SAME","\n")
-      if (!x$SAME){
-        x$values[upper.tri(x$values)] <- ""
-        x$values <- as.data.frame(x$values)
-        x$values <- ifelse(!x$SAME,paste( apply( x$values, 1, paste, collapse=" "), collapse = "\n" ), NULL)
+  if(!is.null(control2$Sigma)){
+    control2$Sigma$initialMatrix <- NULL
+    for (i in 1:length( control2$Sigma ) ){
+      x <- control2$Sigma[[i]]
+      if ( !is.null( x$block ) ){
+        ## Print BLOCK(n)
+        ## If SAME then don't print values just text
+        x$block <- paste( paste("$SIGMA BLOCK(", x$block, ")", sep=""),if( x$SAME) "SAME","\n")
+        if (!x$SAME){
+          x$values[upper.tri(x$values)] <- ""
+          x$values <- as.data.frame(x$values)
+          x$values <- ifelse(!x$SAME,paste( apply( x$values, 1, paste, collapse=" "), collapse = "\n" ), NULL)
+        }
+        if (x$SAME) { x$values <- ""}
+        ## If FIX then add this
+        x$FIX <- ifelse( x$FIX , "FIX \n" , "\n")
+        Sigma.txt[[i]] <- paste0(list(x$block, x$values, x$fixed),collapse="")
+      } else { 
+        y <- data.frame(x)
+        y$FIX <- ifelse(x$FIX, "FIX", "")
+        y$comments <- ifelse( !is.na(y$comments), paste(";",y$comments), "")
+        out <- apply(y, 1, paste, collapse=" ")
+        sigmaBlockName <-  paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Sigma"],sep="")
+        Sigma.txt[[i]] <- paste(paste(sigmaBlockName,"\n",sep=""), paste(out,collapse=" \n"))
       }
-      if (x$SAME) { x$values <- ""}
-      ## If FIX then add this
-      x$FIX <- ifelse( x$FIX , "FIX \n" , "\n")
-      Sigma.txt[[i]] <- paste0(list(x$block, x$values, x$fixed),collapse="")
-    } else { 
-      y <- data.frame(x)
-      y$FIX <- ifelse(x$FIX, "FIX", "")
-      y$comments <- ifelse( !is.na(y$comments), paste(";",y$comments), "")
-      out <- apply(y, 1, paste, collapse=" ")
-      sigmaBlockName <-  paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Sigma"],sep="")
-      Sigma.txt[[i]] <- paste(paste(sigmaBlockName,"\n",sep=""), paste(out,collapse=" \n"))
     }
+    Sigma.txt <- paste( Sigma.txt, collapse = "" )
   }
-  Sigma.txt <- paste( Sigma.txt, collapse = "" )
   control2$Sigma <- Sigma.txt
   
   #########################################################
