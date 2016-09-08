@@ -18,6 +18,15 @@ Sys.which2 <- function(cmd) {
   Sys.which(cmd)
 }
 
+## Convert key-value pairs to PsN argument list
+list_to_PsNArgs <- function(x){
+  x1 <- sapply(x, function(x){ifelse(is.character(x),shQuote(x),x)})
+  x2 <- paste(names(x1),x1,sep="=")
+  x3 <- gsub("=TRUE","",x2)
+  x4 <- paste("-",x3,sep="")
+  paste0(x4,collapse=" ")
+}
+
 ## -- from metrumrg runCommand.R --------------------------------------------- set up the
 ## call
 execute <- function(command, intern = FALSE, minimized = FALSE, invisible = TRUE) {
