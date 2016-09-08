@@ -268,6 +268,8 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   
   control2$Problem <- paste(paste("$",ctrlmerged$orig.block[ctrlmerged$RNMI.block=="Problem"],sep=""), control2$Problem)
   
+  control2$Cov <- ifelse(grep("COV",ctrlmerged$orig.block)>0, "$COV\n",NULL)
+  
   control3 <- list(NULL)
   for (i in 1:nrow(ctrlmerged)) {
     if (ctrlmerged$block.id[i] %in% otherBlocks$block.id) 
