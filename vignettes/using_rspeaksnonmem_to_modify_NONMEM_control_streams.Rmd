@@ -1,0 +1,136 @@
+---
+title: "Using rspeaksnonmem to modify NONMEM control streams"
+author: "Mike Smith"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+`rspeaksnonmem` is designed to allow the user to craft workflows based on a given NONMEM model.
+
+For more information on how to use `rspeaksnonmem` to run NONMEM and PsN please review the vignette 
+"Using rspeaksnonmem to run NONMEM and PsN".
+
+After importing and parsing a control stream to an R object using the `RNMImport` package, `rspeaksnonmem` allows the user to easily change initial estimates, change data attributes or change task properties (estimation or simulation settings) without having to change the model. This saves a lot of textual searching by the user. The resulting data, parameter,
+model and task information is then written back out to file using an existing (possibly the original) model as a 
+template. This ensures that the written NONMEM control stream mirrors as closely as possible the structure of the original file.
+
+## Installation 
+
+### Dependencies 
+
+`rspeaksnonmem` relies on the package [`RNMImport`](https://github.com/MangoTheCat/RNMImport) function 
+`importNmMod` which reads and parses the NONMEM control stream. `rspeaksnonmem` then works with
+the data, parameter values, and task information separately from the model.
+
+Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
+
+```{r install_RNMImport, include=F}
+  #devtools::install_git("MangoTheCat/RNMImport")
+```
+
+### Install rspeaksnonmem
+Eventually, `rspeaksnonmem` will be released to CRAN, but while still in development `rspeaksnonmem` can most easily be installed from GitHub using the `devtools` package:
+
+```{r install_rspeaksnonmem, include=F}
+    #devtools::install_github("MikeKSmith/rspeaksnonmem")
+```
+
+
+```{r,echo=FALSE,results='hide',message=FALSE}
+ devtools::load_all(pkg=".")
+ devtools::load_all(pkg="../../RNMImport")
+```
+
+Load the `rspeaksnonmem` package
+```{r, include=FALSE, echo=FALSE}
+#library(rspeaksnonmem)
+```
+
+Copy an example dataset and model to a directory of your choice
+
+```{r,results='hide',echo=T}
+getwd()
+
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_conc_pca.csv"),
+            to = getwd(), overwrite=T )
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin.ctl"),
+            to = getwd(), overwrite=T )
+```
+
+The initial model within the workflow should act as a "template" for modifications. The best practice is to use a model where all possible parameters are defined (including OMEGAs and covariances / correlations) but where it is possible to fix parameters to zero or some null value. We can then run and test a wide variety of models simply by updating the $THETA, $OMEGA and $SIGMA parameters to allow estimation.
+
+## Read the control stream using RNMImport 
+First, we need to read the NONMEM control stream into R using the importNmMod function of RNMImport.
+```{r readControlStream}
+warfModel <- importNmMod("warfarin.ctl")
+class(warfModel)
+names(warfModel)
+```
+
+This creates a list of R objects containing the Raw NONMEM control stream as a vector of characters:
+```{r viewRawNM}
+warfBaseRaw <- warfModel$Raw
+cat(warfModel$Raw, sep="\n")
+```
+
+It also creates a parsed list of control statements in the controlFile slot:
+```{r viewParsedNM}
+warfBaseModel <- warfModel$problemContents[[1]]
+warfModel$problemContents[[1]]
+```
+
+Using `rspeaksnonmem` the user can then update elements of the model using this parsed set of commands. `rspeaksnonmem` provides some additional functions to extract certain elements of the parsed control stream. We view the $DATA and $INPUT commands as "Data" items; $THETA, $OMEGA and $SIGMA as "Parameter" items; $EST, $COV and $TAB as "Task" items; and everything else as "Model" items. 
+
+NOTE: Generally speaking, `rspeaksnonmem` is set up to allow the user to quickly and easily update Data, Parameter or Task items, while leaving the Model unchanged. 
+
+The `rspeaksnonmem` function `getNMDataObjects` returns the RAW $DATA and $INPUT lines from the NONMEM control stream and the associated parsed objects.
+
+```{r getNMData}
+getNMDataObjects(warfModel)
+```
+ 
+Similarly, `getNMParameterObjects` returns the $THETA, $OMEGA and $SIGMA records.
+```{r getNMParameterObjects}
+getNMParameterObjects(warfModel)
+```
+ 
+Finally, `getNMTasProperties` returns the $EST, $COV and $TABLES records.
+```{r getNMTaskPropertiesObjects}
+getNMTaskPropertiesObjects(warfModel)
+```
+
+Together the Data, Parameters, Model and Task information forms a "Modelling Object Group" or MOG which is used for a specific estimation task.
+We can update the MOG using the `rspeaksnonmem` function `updateModel`.
+```{r updateMOG}
+newTheta <- warfBaseModel$Theta
+newTheta["POP_TLAG",] <- list(Lower=0, Est=0.75, Upper=1.5, FIX=FALSE, comments="POP_TLAG")
+newWarfModel <- updateModel(parsedObject = warfBaseModel, theta=newTheta)
+newWarfModel
+```
+
+Note how the THETA settings for POP_TLAG have been updated, but all other elements are unchanged. It is also possible to change the initial estimates while retaining the specified lower and upper bounds:
+
+```{r}
+newThetas <- warfBaseModel$Theta
+newInits <- c(0.25, 10, 4, 0.25, 0, 0.1)
+newThetas[,"Est"] <- newInits
+
+newModel <- updateModel(parsedObject = warfBaseModel, theta=newThetas)
+newModel
+```
+
+We can finally write out the updated control stream using the function `writeNMControlStream`. This function uses an existing NONMEM control stream (or raw records) as a template for writing the updated, parsed statements. This ensures that the order of statements corresponds between the original and updated files, which allows easier checking of changes.
+
+```{r writeNMControlStream}
+writeNMControlStream(templateModel = warfModel$Raw, parsedControl = newModel, modelFile = "warfarin2", modelExtension = "ctl")
+cat(readLines("warfarin2.ctl"), sep="\n")
+```
+
