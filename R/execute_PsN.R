@@ -12,6 +12,8 @@
 execute_PsN <- function(command = NULL, modelFile = NULL,  addargs = NULL, 
                         cleanup = T, working.dir = NULL, ...) {
   
+  addargsText <- list_to_PsNArgs(addargs)
+  
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
   baseCommand <- ifelse( is.null( command ), 
@@ -20,7 +22,7 @@ execute_PsN <- function(command = NULL, modelFile = NULL,  addargs = NULL,
   command <- paste(baseCommand, " ", shQuote(modelFile), 
                    " --directory=", shQuote(working.dir),
                    if(cleanup) " --clean=2",
-                   " ", addargs, sep="")
+                   " ", addargsText, sep="")
   cat(paste(command, "\n"))
   execute(command = command)
 } 

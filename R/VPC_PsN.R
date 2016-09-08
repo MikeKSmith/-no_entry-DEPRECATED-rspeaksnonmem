@@ -2,7 +2,7 @@
 #'
 #' @param modelFile NONMEM control stream file name (without extension)
 #' @param modelExtension NONMEM control stream file extension. Defaults to '.mod'
-#' @param addargs Additional PsN command line arguments (text string)
+#' @param addargs List of additional PsN command line arguments (format: argumentName = value or argumentName=TRUE/FALSE )
 #' @param working.dir Working directory containing control stream and where output files should be stored
 #' @param cleanup Whether to clean up additional NONMEM files and folders following estimation. Defaults to TRUE.
 #' @return NONMEM estimation output files
@@ -11,6 +11,8 @@
 #'
 VPC_PsN <- function(command = NULL, modelFile = NULL, nsamp = 100, 
                     seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
+
+  addargsText <- list_to_PsNArgs(addargs)
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
@@ -24,7 +26,7 @@ VPC_PsN <- function(command = NULL, modelFile = NULL, nsamp = 100,
                    nsamp, " --seed=", seed, " ", 
                    " --directory=", shQuote(working.dir),
                    if(cleanup) " --clean=2"," ",
-                   addargs, 
+                   addargsText, 
                    sep = "")
   cat(paste(command, "\n"))
   execute(command)

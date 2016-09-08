@@ -1,14 +1,17 @@
 #' Use PsN to summarise NONMEM output
 #'
 #' @param listFile NONMEM output file name
-#' @param addargs Additional PsN command line arguments (text string)
+#' @param addargs List of additional PsN command line arguments (format: argumentName = value or argumentName=TRUE/FALSE )
 #' @param working.dir Working directory containing control stream and where output files should be stored
 #' @return PsN sumo output
 #' @examples
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
-#'
+#' @export
+
 sumo_PsN <- function(command = NULL, listFile = NULL,  addargs = NULL, 
                      working.dir = NULL, ...) {
+
+  addargsText <- list_to_PsNArgs(addargs)
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
@@ -17,7 +20,7 @@ sumo_PsN <- function(command = NULL, listFile = NULL,  addargs = NULL,
                          defineExecutable( command=command, ... ))
   command <- paste(baseCommand, " ", shQuote(listFile), 
                    " --directory=", shQuote(working.dir),
-                   " ", addargs, sep="")
+                   " ", addargsText, sep="")
   cat(paste(command, "\n"))
   execute(command = command)
 } 
