@@ -1,0 +1,188 @@
+---
+title: "Using rspeaksnonmem to run NONMEM & PsN"
+author: "Mike Smith "
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+`rspeaksnonmem` is designed to allow the user to craft workflows based on a given NONMEM model.
+
+`rspeaksnonmem` allows the user to run NONMEM models from R either directly running the nmfe.bat or by
+calling [Perl speaks NONMEM](http://psn.sourceforge.net) (PsN) functions like "execute". Other PsN functions can be run from
+R - VPC (Visual Predictive Check), bootstrap, SSE (Stochastic Simulation and Estimation).
+
+This allows the user to define sequences of pharmacometrics workflow tasks via R within a single R script. This increases traceability and reproducibility of workflow.
+
+## Installation 
+
+### Dependencies 
+
+`rspeaksnonmem` relies on the package [`RNMImport`](https://github.com/MangoTheCat/RNMImport) function 
+`importNmMod` which reads and parses the NONMEM control stream. `rspeaksnonmem` then works with
+the data, parameter values, and task information separately from the model.
+
+Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
+
+```{r install_RNMImport, include=F}
+  #devtools::install_git("MangoTheCat/RNMImport")
+```
+
+### Install rspeaksnonmem
+Eventually, `rspeaksnonmem` will be released to CRAN, but while still in development `rspeaksnonmem` can most easily be installed from GitHub using the `devtools` package:
+
+```{r install_rspeaksnonmem, include=F}
+    #devtools::install_github("MikeKSmith/rspeaksnonmem")
+```
+
+## Setup 
+In order to execute NONMEM or PsN `rspeaksnonmem` needs to know where these tools are installed on your system.
+The function defineExecutable creates the system command line for each tool by either referencing the tool name against 
+an `installInfo` configuration file consisting of tool name, installation path and command e.g. "nonmem", "c:/nm72", "nmfe72.bat"; alternatively by searching for whether a command is configured on the system path; or by simply searching for executable files below an installation directory.
+
+On Linux systems the "command" argument should provide the full path to the executable or define the command applicable
+for running the tool at the system prompt. On Linux systems the "path" information on the configuration file may be left 
+blank.
+
+```{r setExecutables}
+perlPath <- "c:/perl516"
+PsNVersion <- "3.5.4"
+NONMEMcommand <- "nmfe72"
+
+tools <- c("NONMEM", "execute", "VPC", "bootstrap", "SSE", "runrecord", "sumo")
+installPaths <- c("c:/nm72", rep(perlPath,length(tools)-1))
+commands <- sapply(tools, function(x) ifelse( x == "NONMEM", NONMEMcommand, paste( x, PsNVersion, sep = "-" ) ) )
+
+installedSoftware <- data.frame( cbind( tool = tools, path = installPaths, command = commands ), 
+                                 row.names=NULL, stringsAsFactors = F)
+installedSoftware
+```
+
+
+```{r,echo=FALSE,results='hide',message=FALSE}
+ devtools::load_all(pkg=".")
+```
+
+Load the `rspeaksnonmem` package
+```{r, include=FALSE, echo=FALSE}
+#library(rspeaksnonmem)
+```
+
+Copy an example dataset and model to a directory of your choice
+
+```{r,results='hide',echo=T}
+getwd()
+
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"THEO.dat"),
+            to = getwd(), overwrite=T )
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"Theophylline.mod"),
+            to = getwd(), overwrite=T )
+```
+
+## Running NONMEM 
+```estimate_NM``` runs NONMEM for a given modelFile. The ```installInfo``` argument holds configuration information
+for each tool (shown above) which is used to create the command for the system prompt. The ```cleanup``` argument deletes
+ancillary files from the working directory.
+
+```{r NONMEM }
+estimate_NM(modelFile="theophylline.mod", installInfo=installedSoftware, cleanup=T)
+```
+## Returning results from NONMEM output 
+```{r Sumo }
+sumo_PsN(listFile="theophylline.lst", installInfo=installedSoftware)
+```
+
+We can also use RNMImport to read the NONMEM output:
+
+```{r RNMImport_import}
+#library(RNMImport)
+ devtools::load_all(pkg="../../RNMImport")
+model1<-importNm(conFile="theophylline.mod", reportFile = "theophylline.lst")
+```
+ 
+and use the get<...> functions to extract information from the output into R objects. 
+First let's retrieve the Objective Function Value (OFV): 
+```{r getObjective}
+getObjective(model1)	
+```
+
+And structural parameter estimates (THETAS): 
+```{r getThetas}
+getThetas(model1)
+```
+
+We can also return the initial, final and std errors of these parameters (stderror if the $COV step completes successfully): 
+```{r getThetas2}
+getThetas(model1, what = c("initial","final","stderrors")) 
+```
+
+We can extract OMEGA values as with getThetas: 
+```{r getOmegas}
+getOmegas(model1) 
+```
+
+We can extract the residual unexplained variability with getSigmas, analogously to getThetas: 
+```{r getSigmas}
+getSigmas(model1) 
+```
+
+Again, similarly, the covariance matrix of parameter estimates is available with getEstimateCov.
+```{r getEstimateCov}
+# The argument corMatrix can optionally return the correlation matrix.
+getEstimateCov(model1, corMatrix = TRUE)
+```
+
+We can perform model diagnostics using the Xpose R package. This package requires certain output from the NONMEM control stream, namely the sdtab table including predictions and residuals; the patab file containing parameter estimates; and optionally the cotab and catab files containing continuous and categorical covariates respectively. Please see the Xpose documentation for more details. The basicGOF function gives a run summary and basic goodness of fit plots. It assumes that the run number is appended to the end of each of the table file names e.g. sdtab0, sdtab1 etc.
+
+## Model qualification 
+```{r,message=FALSE}
+basicGOF_Xpose()
+```
+
+## Different ways of specifying the command to be run
+The `defineExecutable` function used by ```estimate_NM``` and PsN calling functions can search for user-specified command 
+to find valid executables at the system prompt:
+
+```{r defineExecutable_with_command }
+defineExecutable(command = "execute-3.5.4")
+```
+
+or it can search for suitable executables in a specified path:
+```{r defineExecutable2}
+defineExecutable(command = "nmfe72", installPath = "c:/nm72/", searchCommand = T)
+```
+
+The PsN functions work in an analogous way. Here we use ```execute_PsN``` to run estimation, but using PsN's additional 
+functionality for restarting, tweaking initial estimates etc. Additional arguments used for PsN can be passed through the
+```addargs``` argument to the function:
+
+```{r executePsN, include=FALSE}
+execute_PsN(modelFile='theophylline.mod', command="execute-3.5.4", 
+            addargs=list(tweak_inits=TRUE, retries=3), working.dir="Run1")
+```
+## VPC 
+Next we can perform VPC using PsN:
+```{r VPC_PsN}
+VPC_PsN(modelFile='theophylline.mod', installInfo=installedSoftware, working.dir="Run1_VPC",
+              nsamp=100, seed=54321, 
+              addargs=list(lst="theophylline.lst", bin_by_count=0,
+              bin_array="0.125,0.375,0.75,1.5,2.5,5,6,8,10,16,48"))
+```
+
+and then use the Xpose function xpose_vpc to plot the result:
+```{r plot_VPC}
+vpcdir <- "Run1_VPC"
+
+vpctab <- file.path(vpcdir,"vpctab")
+vpcinfo <- file.path(vpcdir,"vpc_results.csv")
+
+xpose4::xpose.VPC(vpc.info=vpcinfo,	vpctab=vpctab)
+```
+## Bootstrap 
+```{r bootstrap_PsN, include=FALSE}
+bootstrap_PsN(modelFile='theophylline.mod', installInfo=installedSoftware, 
+              nsamp=20, seed=54321, working.dir="Run1_bootstrap")
+```
