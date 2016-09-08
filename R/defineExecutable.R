@@ -24,6 +24,7 @@
 #' defineExecutable(command='execute', searchCommand=F)
 #' defineExecutable(installPath="c:/nm72/", command="nmfe72", searchCommand=T)
 #' do.call(system,args=list(command=defineExecutable(command="execute-3.5.4")))
+#' @export
 
 defineExecutable <- function( tool = NULL, installInfo = NULL, command=NULL, installPath=NULL, searchCommand=FALSE, ...) {
   
