@@ -145,22 +145,26 @@ We can now combine these to test a number of possible models:
 
 We can define the the sequence of steps (workflow) we want to take with each model:
 ```{r defineWorkflow}
-myPopPKWorkflow <- function(model){
-  workingDir <- file.path(getwd(),deparse(substitute(model)))
+myPopPKWorkflow <- function(model, workingDir=NULL){
+  if(is.null(workingDir)) workingDir <- file.path(getwd(),deparse(substitute(model)))
+  dir.create(workingDir)
+
+  file.copy(from = Model1$Data[,"File"], to = workingDir)
+  
   controlFile <- file.path(workingDir,paste(deparse(substitute(model)),".ctl",sep=""))
   lstFile <-  file.path(workingDir,paste(deparse(substitute(model)),".lst",sep=""))
 
-  writeNMControlStream(templateModel = warfModel$Raw, parsedControl = model,
-                       outputFile = controlFile, outFileExtension = "ctl")
+  writeNMControlStream(templateModel = warfModel$Raw, parsedControl = Model1,
+                       outputFile = controlFile)
   
-  execute_PsN(modelFile = controlFile, command="execute-3.5.4", 
-              cleanup = T, working.dir = workingDir,
-              addargs = list(retries=3, tweak_inits=TRUE))
-  
-  sumo_PsN(command = "sumo-3.5.4", listFile = paste(quote(model),".ctl", sep=""),
+  estimate_NM(modelFile = controlFile, reportExtension = "lst", 
+              command = "nonmem-7.2",
+              working.dir = workingDir, cleanup = T)
+              
+  sumo_PsN(command = "sumo-3.5.4", listFile = lstFile,
            working.dir = workingDir)
   
-  basicGOF_Xpose(runno, working.dir = workingDir)
+  basicGOF_Xpose( working.dir = workingDir )
   
   myModelOutput <- importNm(conFile = controlFile, reportFile = lstFile, path = workingDir)
   out <- list(OFV=getObjective(myModelOutput), 
