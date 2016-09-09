@@ -10,14 +10,15 @@
 #' @examples
 #' estimate.NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 
-estimate_NM <- function(command = NULL, modelFile = NULL, reportExtension = ".lst", 
+estimate_NM <- function(command = NULL, modelFile = NULL, reportExtension = "lst", 
                         cleanup = F, working.dir = NULL, ...) {
   
   baseCommand <- ifelse( is.null( command ), 
                          defineExecutable( tool = "nonmem" , ... ) , 
                          defineExecutable( command=command, ... ))
   command <- paste(baseCommand, shQuote(modelFile), 
-                   shQuote(paste(tools::file_path_sans_ext(modelFile), reportExtension, sep = "")))
+                   shQuote(paste(tools::file_path_sans_ext(modelFile), 
+                                 sub(".","",reportExtension), sep = ".")))
   cat(paste(command, "\n"))
   execute(command)
   
