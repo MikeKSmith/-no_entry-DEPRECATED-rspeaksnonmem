@@ -20,7 +20,9 @@ Sys.which2 <- function(cmd) {
 
 ## Convert key-value pairs to PsN argument list
 list_to_PsNArgs <- function(x){
-  x1 <- sapply(x, function(x){ifelse(is.character(x),shQuote(x),x)})
+  quotedStrings <- sapply(x, is.character)
+  x1 <- x
+  x1[quotedStrings] <- shQuote(x1[quotedStrings])
   x2 <- paste(names(x1),x1,sep="=")
   x3 <- gsub("=TRUE","",x2)
   x4 <- paste("-",x3,sep="")
