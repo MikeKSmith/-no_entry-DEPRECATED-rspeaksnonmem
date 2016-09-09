@@ -83,7 +83,7 @@ file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"Theop
 ```
 
 ## Running NONMEM 
-```estimate_NM``` runs NONMEM for a given modelFile. The ```installInfo``` argument holds configuration information
+```estimate_NM``` runs NONMEM for a given model file. The ```installInfo``` argument holds configuration information
 for each tool (shown above) which is used to create the command for the system prompt. The ```cleanup``` argument deletes
 ancillary files from the working directory.
 

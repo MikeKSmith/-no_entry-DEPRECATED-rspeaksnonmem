@@ -12,7 +12,7 @@
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
 #' @export
 
-writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelExtension = ".mod", 
+writeNMControlStream <- function(templateModel, parsedControl, outputFile, outFileExtension = ".mod", 
                                  modelBlockNames = c("PK", "PRE", "SUB", "MOD", "DES", "ERR","PRI")) {
   
   #########################################################
@@ -290,7 +290,8 @@ writeNMControlStream <- function(templateModel, parsedControl, modelFile, modelE
   
   model <- is.element(ctrlmerged$block.id, modelBlockNames)
   
-  sink(file = paste(modelFile, modelExtension, sep = "."))
+  fileName <- ifelse(tools::file_ext(outputFile)=="", paste(outputFile, sub(".","",outFileExtension), sep = "."), outputFile)
+  sink(file = fileName)
   for (i in 1:nrow(ctrlmerged)) {
     cat(paste("\n",control3[[i]]))
   }

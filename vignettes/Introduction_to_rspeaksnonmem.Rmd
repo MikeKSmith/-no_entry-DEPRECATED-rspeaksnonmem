@@ -111,11 +111,9 @@ thetaLag["POP_TLAG",] <- EST_POP_TLAG
 
 The template model has proportional error only. RUV is set up as THETA * SIGMA where SIGMA ~ N(0,1).
 ```{r specifyRUV}
-additiveRUV <- list(Lower=0, Est=0.05, Upper=Inf, FIX=FALSE, comments="RUV_ADD")
-propRUV <- list(Lower=0, Est=0.05, Upper=Inf, FIX=FALSE, comments="RUV_PROP")
-noAdditiveRUV <- list(Lower=0, Est=0, Upper=0, FIX=TRUE, comments="RUV_ADD")
-noPropRUV <- list(Lower=0, Est=0, Upper=0, FIX=TRUE, comments="RUV_PROP")
-combRUV <- data.frame(lower=c(0,0), Est=c(0.1,0.1), FIX=FALSE, comments=c("RUV_ADD","RUV_PROP"))
+ruvAdd <- list(Lower=0, Est=0.1, FIX=FALSE, comments="RUV_ADD")
+thetaLagComboRUV <- thetaLag
+thetaLagComboRUV["RUV_ADD",] <- ruvAdd
 ```
 
 The template model specifies an OMEGA block (covariance) between ETA_CL and ETA_V.
@@ -129,20 +127,20 @@ CLVBlock_noTLAG <- params$OMEGA
 diagPPV <- list(values=diag(c(0.1,0.1,0.1,0.1)), FIX=FALSE)
 diagPPV_noTLAG <- list(list(values=diag(c(0.1,0.1,0.1)), FIX=FALSE),
                             list(values=0, FIX=TRUE))
-diagCLV_noKATLAG <- list(list(values=diag(c(0.1,0.1)), FIX=FALSE),
-                            data.frame(values=c(0,0), FIX=rep(TRUE,2)))
+diagCLV_noKATLAG <- list(data.frame(values=c(0.1, 0.1, 0, 0), FIX=c(rep(FALSE,2),rep(TRUE,2)),
+                               comments=c("PPV_CL","PPV_V","PPV_KA","PPV_TLAG")))
 ```
 
 We can now combine these to test a number of possible models:
 ```{r defineModels}
-  Model1 <- updateModel(warfTemplateModel, theta=thetaNoLag, omega=diagCLV_noKATLAG, sigma=propRUV, runno=1) ## First model
-  Model2 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagCLV_noKATLAG, sigma=propRUV, runno=2)  ## Add POP_TLAG
-  Model3 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV_noTLAG, sigma=propRUV, runno=3)  ## Add PPV_KA
-  Model4 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVBlock_noTLAG, sigma=propRUV, runno=4)  ## Change to block CL, V
-  Model5 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV, sigma=propRUV, runno=5)  ## Add PPV_TLAG
-  Model6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVKABlock, sigma=propRUV, runno=6)  ## Change to block CL, V, KA
-  Model7 <- updateModel(warfTemplateModel, theta=thetaLag, omega=fullBlockOmega, sigma=propRUV, runno=7)  ## full block OMEGA
-  Model8 <- updateModel(warfTemplateModel, theta=thetaLag, omega=fullBlockOmega, sigma=combRUV, runno=8)  ## Combined RUV model (add + prop) 
+  Model1 <- updateModel(warfTemplateModel, theta=thetaNoLag, omega=diagCLV_noKATLAG, runno=1) ## First model
+  Model2 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagCLV_noKATLAG,   runno=2)  ## Add POP_TLAG
+  Model3 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV_noTLAG,     runno=3)  ## Add PPV_KA
+  Model4 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVBlock_noTLAG,    runno=4)  ## Change to block CL, V
+  Model5 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV,            runno=5)  ## Add PPV_TLAG
+  Model6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVKABlock,         runno=6)  ## Change to block CL, V, KA
+  Model7 <- updateModel(warfTemplateModel, theta=thetaLag, omega=fullBlockOmega,     runno=7)  ## full block OMEGA
+  Model8 <- updateModel(warfTemplateModel, theta=thetaLagComboRUV, omega=fullBlockOmega, runno=8)  ## Combined RUV model (add + prop) 
 ```
 
 We can define the the sequence of steps (workflow) we want to take with each model:
@@ -153,9 +151,9 @@ myPopPKWorkflow <- function(model){
   lstFile <-  file.path(workingDir,paste(deparse(substitute(model)),".lst",sep=""))
 
   writeNMControlStream(templateModel = warfModel$Raw, parsedControl = model,
-                       modelFile = deparse(substitute(model)), modelExtension = "ctl")
+                       outputFile = controlFile, outFileExtension = "ctl")
   
-  execute_PsN(modelFile = model, command="execute-3.5.4", 
+  execute_PsN(modelFile = controlFile, command="execute-3.5.4", 
               cleanup = T, working.dir = workingDir,
               addargs = list(retries=3, tweak_inits=TRUE))
   

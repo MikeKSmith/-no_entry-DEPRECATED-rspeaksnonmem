@@ -130,7 +130,7 @@ newModel
 We can finally write out the updated control stream using the function `writeNMControlStream`. This function uses an existing NONMEM control stream (or raw records) as a template for writing the updated, parsed statements. This ensures that the order of statements corresponds between the original and updated files, which allows easier checking of changes.
 
 ```{r writeNMControlStream}
-writeNMControlStream(templateModel = warfModel$Raw, parsedControl = newModel, modelFile = "warfarin2", modelExtension = "ctl")
+writeNMControlStream(templateModel = warfModel$Raw, parsedControl = newModel, outputFile = "warfarin2", outFileExtension = "ctl")
 cat(readLines("warfarin2.ctl"), sep="\n")
 ```
 
