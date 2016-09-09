@@ -11,7 +11,7 @@
 sumo_PsN <- function(command = NULL, listFile = NULL,  addargs = NULL, 
                      working.dir = NULL, ...) {
 
-  addargsText <- list_to_PsNArgs(addargs)
+  addargsText <- ifelse(!is.null(addargs),list_to_PsNArgs(addargs), "")
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
@@ -20,7 +20,8 @@ sumo_PsN <- function(command = NULL, listFile = NULL,  addargs = NULL,
                          defineExecutable( command=command, ... ))
   command <- paste(baseCommand, " ", shQuote(listFile), 
                    " --directory=", shQuote(working.dir),
-                   " ", addargsText, sep="")
+                   " ", addargsText,
+                   sep="")
   cat(paste(command, "\n"))
   execute(command = command)
 } 

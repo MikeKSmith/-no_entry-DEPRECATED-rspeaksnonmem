@@ -12,7 +12,7 @@
 bootstrap_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".mod", nsamp = 100, 
                           seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
   
-  addargsText <- list_to_PsNArgs(addargs)
+  addargsText <- ifelse(!is.null(addargs),list_to_PsNArgs(addargs), "")
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
