@@ -8,7 +8,8 @@
 #' @return NONMEM estimation output files
 #' @examples
 #' VPC_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
-#'
+#' @export
+
 VPC_PsN <- function(command = NULL, modelFile = NULL, nsamp = 100, 
                     seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
 

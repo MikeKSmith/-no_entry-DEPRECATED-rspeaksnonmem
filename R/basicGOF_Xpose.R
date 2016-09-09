@@ -5,7 +5,7 @@
 #' @examples
 #' basicGOF_Xpose(1)
 
-basicGOF_Xpose <- function(runno = NULL, ...) {
+basicGOF_Xpose <- function(runno = NULL, working.dir=getwd(), ...) {
     ## ----setupRunnoforXpose--------------------------------------------------
     if (!length(runno) > 0) runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
     
