@@ -83,7 +83,7 @@ cat(warfModel$Raw, sep="\n")
 
 It also creates a parsed list of control statements in the controlFile slot:
 ```{r viewParsedNM}
-warfBaseModel <- warfModel$problemContents[[1]]
+warfTemplateModel <- warfModel$problemContents[[1]]
 warfModel$problemContents[[1]]
 ```
 
@@ -110,20 +110,20 @@ getNMTaskPropertiesObjects(warfModel)
 Together the Data, Parameters, Model and Task information forms a "Modelling Object Group" or MOG which is used for a specific estimation task.
 We can update the MOG using the `rspeaksnonmem` function `updateModel`.
 ```{r updateMOG}
-newTheta <- warfBaseModel$Theta
+newTheta <- warfTemplateModel$Theta
 newTheta["POP_TLAG",] <- list(Lower=0, Est=0.75, Upper=1.5, FIX=FALSE, comments="POP_TLAG")
-newWarfModel <- updateModel(parsedObject = warfBaseModel, theta=newTheta)
+newWarfModel <- updateModel(parsedObject = warfTemplateModel, theta=newTheta)
 newWarfModel
 ```
 
 Note how the THETA settings for POP_TLAG have been updated, but all other elements are unchanged. It is also possible to change the initial estimates while retaining the specified lower and upper bounds:
 
 ```{r}
-newThetas <- warfBaseModel$Theta
+newThetas <- warfTemplateModel$Theta
 newInits <- c(0.25, 10, 4, 0.25, 0, 0.1)
 newThetas[,"Est"] <- newInits
 
-newModel <- updateModel(parsedObject = warfBaseModel, theta=newThetas)
+newModel <- updateModel(parsedObject = warfTemplateModel, theta=newThetas)
 newModel
 ```
 
