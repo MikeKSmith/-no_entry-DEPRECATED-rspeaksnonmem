@@ -308,7 +308,7 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile, outFi
     ## First $Table statement doesn't need '$Table' since it comes from ctrlmerged if present
     if(!is.null(control2$Estimates)){
       estBlockName <- ifelse(length(grep("Estimates",ctrlmerged$RNMI.block))>0, 
-                             ctrlmerged$RNMI.block[grep("Estimates",ctrlmerged$RNMI.block)],
+                             ctrlmerged$orig.block[grep("Estimates",ctrlmerged$RNMI.block)],
                              "")
       estBlockName <- paste("$",estBlockName,sep="")
       control2$Estimates <- paste(estBlockName, paste(control2$Estimates, collapse=paste("\n",estBlockName,sep="")))
