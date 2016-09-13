@@ -1,6 +1,6 @@
 ---
 title: "Using rspeaksnonmem to run NONMEM & PsN"
-author: "Mike Smith "
+author: "Mike K Smith (Mike.K.Smith@Pfizer.com)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,6 +9,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r setKnitrOptions, echo=FALSE,}
+  library(knitr)
+  opts_chunk$set(fig.width=6, fig.height=6)
+```
 `rspeaksnonmem` is designed to allow the user to craft workflows based on a given NONMEM model.
 
 `rspeaksnonmem` allows the user to run NONMEM models from R either directly running the nmfe.bat or by
@@ -64,6 +68,7 @@ installedSoftware
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
  devtools::load_all(pkg=".")
+ devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
 ```
 
 Load the `rspeaksnonmem` package
@@ -91,15 +96,14 @@ ancillary files from the working directory.
 estimate_NM(modelFile="theophylline.mod", installInfo=installedSoftware, cleanup=T)
 ```
 ## Returning results from NONMEM output 
-```{r Sumo }
-sumo_PsN(listFile="theophylline.lst", installInfo=installedSoftware)
+```{r Sumo}
+sumo_PsN(lstFile="theophylline.lst", installInfo=installedSoftware)
 ```
 
 We can also use RNMImport to read the NONMEM output:
 
 ```{r RNMImport_import}
 #library(RNMImport)
- devtools::load_all(pkg="../../RNMImport")
 model1<-importNm(conFile="theophylline.mod", reportFile = "theophylline.lst")
 ```
  
@@ -138,7 +142,7 @@ getEstimateCov(model1, corMatrix = TRUE)
 We can perform model diagnostics using the Xpose R package. This package requires certain output from the NONMEM control stream, namely the sdtab table including predictions and residuals; the patab file containing parameter estimates; and optionally the cotab and catab files containing continuous and categorical covariates respectively. Please see the Xpose documentation for more details. The basicGOF function gives a run summary and basic goodness of fit plots. It assumes that the run number is appended to the end of each of the table file names e.g. sdtab0, sdtab1 etc.
 
 ## Model qualification 
-```{r,message=FALSE}
+```{r,message=FALSE, warning=FALSE}
 basicGOF_Xpose()
 ```
 
@@ -161,7 +165,7 @@ functionality for restarting, tweaking initial estimates etc. Additional argumen
 
 ```{r executePsN, include=FALSE}
 execute_PsN(modelFile='theophylline.mod', command="execute-3.5.4", 
-            addargs=list(tweak_inits=TRUE, retries=3), working.dir="Run1")
+            addargs=list(tweak_inits=TRUE, retries=3))
 ```
 ## VPC 
 Next we can perform VPC using PsN:
@@ -183,6 +187,6 @@ xpose4::xpose.VPC(vpc.info=vpcinfo,	vpctab=vpctab)
 ```
 ## Bootstrap 
 ```{r bootstrap_PsN, include=FALSE}
-bootstrap_PsN(modelFile='theophylline.mod', installInfo=installedSoftware, 
-              nsamp=20, seed=54321, working.dir="Run1_bootstrap")
+# bootstrap_PsN(modelFile='theophylline.mod', installInfo=installedSoftware, 
+#              nsamp=20, seed=54321, working.dir="Run1_bootstrap")
 ```

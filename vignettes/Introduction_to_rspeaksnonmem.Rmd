@@ -1,6 +1,6 @@
 ---
 title: "Introduction to rspeaksnonmem"
-author: "Mike Smith"
+author: "Mike K Smith (Mike.K.Smith@Pfizer.com)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width=6, fig.height=6)
 ```
 
 ## What does `rspeaksnonmem` do?

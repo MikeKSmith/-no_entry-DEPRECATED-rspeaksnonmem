@@ -1,6 +1,6 @@
 ---
 title: "Using rspeaksnonmem to modify NONMEM control streams"
-author: "Mike Smith"
+author: "Mike K Smith (Mike.K.Smith@Pfizer.com)"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -46,7 +46,7 @@ Eventually, `rspeaksnonmem` will be released to CRAN, but while still in develop
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
  devtools::load_all(pkg=".")
- devtools::load_all(pkg="../../RNMImport")
+ devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
 ```
 
 Load the `rspeaksnonmem` package
@@ -130,7 +130,7 @@ newModel
 We can finally write out the updated control stream using the function `writeNMControlStream`. This function uses an existing NONMEM control stream (or raw records) as a template for writing the updated, parsed statements. This ensures that the order of statements corresponds between the original and updated files, which allows easier checking of changes.
 
 ```{r writeNMControlStream}
-writeNMControlStream(templateModel = warfModel$Raw, parsedControl = newModel, outputFile = "warfarin2", outFileExtension = "ctl")
+writeNMControlStream(templateModel = warfModel$Raw, parsedControl = list(newModel), outputFile = "warfarin2", outFileExtension = "ctl")
 cat(readLines("warfarin2.ctl"), sep="\n")
 ```
 
