@@ -53,7 +53,7 @@ Eventually, `rspeaksnonmem` will be released to CRAN, but while still in develop
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
  devtools::load_all(pkg=".")
- devtools::load_all(pkg="../../RNMImport")
+ devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
 ```
 
 Load the `rspeaksnonmem` package
@@ -67,6 +67,8 @@ Copy an example dataset and model to a directory of your choice
 getwd()
 
 file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_conc_pca.csv"),
+            to = getwd(), overwrite=T )
+file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_bootstrap50.dta"),
             to = getwd(), overwrite=T )
 file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin.ctl"),
             to = getwd(), overwrite=T )
@@ -85,6 +87,13 @@ names(warfModel)
 We can select the parsed control stream as the basis for modification:
 ```{r viewParsedNM}
 warfTemplateModel <- warfModel$problemContents[[1]]
+```
+
+We can change the dataset. Here I've sampled 50 subjects from the original warfarin dataset (warfarin.csv) into a dataset called "warfarin_bootstrap50.dta".
+
+```{r updateDataset}
+newData <- warfModel$problemContents[[1]]$Data
+newData[,"File"] <- "warfarin_bootstrap50.dta"
 ```
 
 Using `rspeaksnonmem` the user can then update elements of the model using this parsed set of commands. `rspeaksnonmem` provides some additional functions to extract certain elements of the parsed control stream. We view the $DATA and $INPUT commands as "Data" items; $THETA, $OMEGA and $SIGMA as "Parameter" items; $EST, $COV and $TAB as "Task" items; and everything else as "Model" items. 
@@ -133,14 +142,14 @@ diagCLV_noKATLAG <- list(data.frame(values=c(0.1, 0.1, 0, 0), FIX=c(rep(FALSE,2)
 
 We can now combine these to test a number of possible models:
 ```{r defineModels}
-  run1 <- updateModel(warfTemplateModel, theta=thetaNoLag, omega=diagCLV_noKATLAG, runno=1) ## First model
-  run2 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagCLV_noKATLAG,   runno=2)  ## Add POP_TLAG
-  run3 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV_noTLAG,     runno=3)  ## Add PPV_KA
-  run4 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVBlock_noTLAG,    runno=4)  ## Change to block CL, V
-  run5 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV,            runno=5)  ## Add PPV_TLAG
-  run6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVKABlock,         runno=6)  ## Change to block CL, V, KA
-  run6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=fullBlockOmega,     runno=7)  ## full block OMEGA
-  run7 <- updateModel(warfTemplateModel, theta=thetaLagComboRUV, omega=fullBlockOmega, runno=8)  ## Combined RUV model (add + prop) 
+  run1 <- updateModel(warfTemplateModel, theta=thetaNoLag, omega=diagCLV_noKATLAG, data=newData, runno=1) ## First model
+  run2 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagCLV_noKATLAG, data=newData,   runno=2)  ## Add POP_TLAG
+  run3 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV_noTLAG, data=newData,     runno=3)  ## Add PPV_KA
+  run4 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVBlock_noTLAG, data=newData,    runno=4)  ## Change to block CL, V
+  run5 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV, data=newData,            runno=5)  ## Add PPV_TLAG
+  run6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVKABlock, data=newData,         runno=6)  ## Change to block CL, V, KA
+  run6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=fullBlockOmega, data=newData,     runno=7)  ## full block OMEGA
+  run7 <- updateModel(warfTemplateModel, theta=thetaLagComboRUV, omega=fullBlockOmega, data=newData, runno=8)  ## Combined RUV model (add + prop) 
 ```
 
 We can define the the sequence of steps (workflow) we want to take with each model:
@@ -148,7 +157,7 @@ We can define the the sequence of steps (workflow) we want to take with each mod
 myPopPKWorkflow <- function(model, controlFile, lstFile, dataFile, workingDir=NULL){
   if(is.null(workingDir)) workingDir <- file.path(getwd(),deparse(substitute(model)))
   dir.create(workingDir)
-  
+
   file.copy(from = model$Data[,"File"], to = workingDir)
   
   origWD <- getwd()
@@ -156,22 +165,39 @@ myPopPKWorkflow <- function(model, controlFile, lstFile, dataFile, workingDir=NU
     
   controlFile <- paste(deparse(substitute(model)),".ctl",sep="")
   lstFile <-paste(deparse(substitute(model)),".lst",sep="")
-
-  writeNMControlStream(templateModel = warfModel$Raw, parsedControl = model,
+ 
+  writeNMControlStream(templateModel = warfModel$Raw, parsedControl = list(model),
                        outputFile = controlFile)
-  
+
   estimate_NM(modelFile = controlFile, lstFile=lstFile, 
               command = "nonmem-7.2", cleanup = T)
               
   sumo_PsN(command = "sumo-3.5.4", listFile = lstFile)
-  
-  basicGOF_Xpose( )
-  
-  importNm(conFile = controlFile, reportFile = lstFile)
 
-    on.exit(setwd(origWD))
+  runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
+  
+  ## ----createXpdb----------------------------------------------------------
+  xpdb <- xpose4::xpose.data(runno, quiet = T)
+  # save(base.xpdb, file='Xpose database.RData')
+  
+  ## ----xposeGOF------------------------------------------------------------
+  print(xpose4::dv.vs.pred.ipred(xpdb))
+  print(xpose4::pred.vs.idv(xpdb))
+  print(xpose4::ipred.vs.idv(xpdb))
+  print(xpose4::wres.vs.idv(xpdb))
+  print(xpose4::wres.vs.pred(xpdb))
+  print(xpose4::ranpar.hist(xpdb))
+  print(xpose4::ind.plots(xpdb, layout = c(4, 4)))  
+  
+  results <- importNm(conFile = controlFile, reportFile = lstFile)
+  out <- list(OFV = getObjective(results),
+              thetas = getThetas(results, what = c("initial","final","stderrors")),
+              omegas = getOmegas(results, what = c("initial","final","stderrors")))
+  out
+  on.exit(setwd(origWD))
 }
 ```
+
 We can then run the workflow for each model in turn and compare the results, using the output list as the basis for reporting.
 
 ```{r runModel1}

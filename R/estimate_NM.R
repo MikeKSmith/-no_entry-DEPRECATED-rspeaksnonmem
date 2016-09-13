@@ -17,7 +17,7 @@ estimate_NM <- function(command = NULL, modelFile = NULL, lstFile = NULL, lstFil
                          defineExecutable( tool = "nonmem" , ... ) , 
                          defineExecutable( command=command, ... ))
   lstFile <- ifelse(is.null(lstFile), 
-                    paste(tools::file_path_sans_ext(modelFile), sub("\\.","",reportExtension), sep = "."),
+                    paste(tools::file_path_sans_ext(modelFile), sub("\\.","",lstFileExtension), sep = "."),
                     lstFile)
     command <- paste(baseCommand, shQuote(modelFile),shQuote(lstFile))
                    
