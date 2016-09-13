@@ -8,7 +8,7 @@
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #' @export
 
-sumo_PsN <- function(command = NULL, listFile = NULL,  addargs = NULL, 
+sumo_PsN <- function(command = NULL, lstFile = NULL,  addargs = NULL, 
                      working.dir = NULL, ...) {
 
   addargsText <- ifelse(!is.null(addargs),list_to_PsNArgs(addargs), "")
