@@ -297,10 +297,13 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile, outFi
       tableBlockName <- paste("$",tableBlockName,sep="") 
       Tables.txt <- apply(control2$Table, 1, function(x) {
         paste( tableBlockName, " ",
-               gsub(",", "", x[2]), " ONEHEADER NOPRINT FILE=", x[1], sep = "")
+               gsub(",", "", x["Columns"]), 
+               " NOAPPEND",
+               " ONEHEADER",
+               " NOPRINT FILE=", x[1], sep = "")
       })
       Tables.txt <- gsub("ETA\\.", "ETA\\(", Tables.txt, perl = T)
-      Tables.txt <- gsub("\\.", "\\)", Tables.txt, perl = T)
+      Tables.txt <- gsub("\\. ", "\\) ", Tables.txt, perl = T)
       control2$Tables <- paste(Tables.txt, collapse="\n")
     }
     
@@ -327,8 +330,15 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile, outFi
                              "")
       simBlockName <- paste("$",simBlockName,sep="")
       
-      Seed1 <- ifelse(control2$Sim["Seed1"]>0, paste("(",control2$Sim["Seed1"],")", sep=""), "")
-      Seed2 <- ifelse(control2$Sim["Seed2"]>0, paste("(",control2$Sim["Seed2"],")", sep=""), "")
+      
+      w <- regexpr(pattern = " \\d+", control2$Sim["Seed1"], perl=T)
+      Seed1val <- as.numeric(substring(control2$Sim["Seed1"],w+1, w+attr(w,"match.length")-1))
+      
+      w <- regexpr(pattern = " \\d+", control2$Sim["Seed2"], perl=T)
+      Seed2val <- as.numeric(substring(control2$Sim["Seed2"],w+1, w+attr(w,"match.length")-1))
+      
+      Seed1 <- ifelse(Seed1val > 0, paste("(",control2$Sim["Seed1"],")", sep=""), "")
+      Seed2 <- ifelse(Seed2val > 0, paste("(",control2$Sim["Seed2"],")", sep=""), "")
       simOnly <- ifelse(control2$Sim["simOnly"], "ONLYSIMULATION", "")
       subProb <- ifelse(control2$Sim["nSub"]==1,"",paste("SUBPROBLEMS=",control2$Sim["nSub"]))
       true <- ifelse(control2$Sim["TRUE"]=="INITIAL", "", paste("TRUE=",control2$Sim["TRUE"]))
