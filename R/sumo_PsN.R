@@ -18,7 +18,7 @@ sumo_PsN <- function(command = NULL, lstFile = NULL,  addargs = NULL,
   baseCommand <- ifelse( is.null( command ), 
                          defineExecutable( tool = "sumo" , ... ) , 
                          defineExecutable( command=command, ... ))
-  command <- paste(baseCommand, " ", shQuote(listFile), 
+  command <- paste(baseCommand, " ", shQuote(lstFile), 
                    " --directory=", shQuote(working.dir),
                    " ", addargsText,
                    sep="")
