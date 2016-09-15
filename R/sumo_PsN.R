@@ -19,7 +19,7 @@ sumo_PsN <- function(tool = NULL, command = NULL,
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
-  psnOpts <- c(list(dir = working.dir),
+  psnOpts <- c(list(directory = working.dir),
                psnOpts)
   
   baseCommand <- ifelse(is.null(command), 

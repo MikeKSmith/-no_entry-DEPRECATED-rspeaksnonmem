@@ -20,7 +20,7 @@ bootstrap_PsN <- function(tool = NULL, command = NULL,
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
-  psnOpts <- c(list(dir = working.dir, clean = clean), 
+  psnOpts <- c(list(directory = working.dir, clean = clean), 
                psnOpts)
   
   baseCommand <- ifelse(is.null(command), 

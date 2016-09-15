@@ -9,38 +9,27 @@
 #' tweak_inits=TRUE))
 #' @export
 
-validate_PsN_options <- function(command = NULL, psnOpts = NULL) {
+validate_PsN_options <- function(command = NULL, psnOpts = NULL, 
+                                 perl_options_command = "psn_options") {
+
   baseCommand <- ifelse(is.null(command), 
                         defineExecutable(tool = tool), 
                         defineExecutable(command = command))
+
+  psnOptionCommand <- defineExecutable(command = "psn_options*")
+  psnCommon <- system( paste(psnOptionCommand, "-h"), intern = TRUE)
+  psnCommon <- parse_PsN_options(psnCommon)
   
   command <- paste(baseCommand, "-h ")
-  psnArgs <- system(command, intern = TRUE)
-  psnArgs <- stringr::str_trim(psnArgs)
+  psnOptions <- system(command, intern = TRUE)
+  psnOptions <- parse_PsN_options(psnOptions)
+  psnOptions$optional <- psnOptions$optional + length(psnCommon$optName)
+  psnOptions$mandatory <- psnOptions$mandatory + length(psnCommon$optName)
   
-  firstArg <- grep("^\\[ -h", psnArgs) + 1
-  lastArg <- grep("^Options enclosed", psnArgs) - 2
-  
-  psnArgs <- psnArgs[firstArg:lastArg]
-  optionalArgs <- grep("^\\[", psnArgs)
-  mandatoryArgs <- grep("^--", psnArgs)
-  psnArgs <- gsub("\\[", "", psnArgs)
-  psnArgs <- gsub("\\]", "", psnArgs)
-  psnArgs <- gsub("--", "", psnArgs)
-  psnArgs <- gsub(" ", "", psnArgs)
-  
-  ## Check types
-  psnArgs <- gsub("\\'string\\'", "is.character", psnArgs)  ## character
-  psnArgs <- gsub("\\'integer\\'", "is.wholenumber", psnArgs)  ## wholenumber / integer
-  psnArgs <- gsub("\\'number\\'", "is.double", psnArgs)  ## double precision
-  psnArgs <- gsub("!", "=is.logical", psnArgs)  ## logical / boolean
-  argName <- gsub("=.*", "", psnArgs)
-  argType <- gsub(".*=", "", psnArgs)
-  names(argType) <- argName
-  argType[argType == argName] <- ""
+  psnOptions <- mapply(c, psnCommon, psnOptions)
   
   ## Check psnOpts names
-  validName <- names(psnOpts) %in% argName
+  validName <- names(psnOpts) %in% psnOptions$optName
   if (!all(validName)) 
     warning(paste(names(psnOpts[!validName]),
                   "is not a valid PsN argument"))
@@ -49,8 +38,9 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL) {
   
   quotedStrings <- sapply(psnOpts, is.character)
   psnOpts[quotedStrings] <- shQuote(psnOpts[quotedStrings])
-  checkpsnOpts <- psnOpts[argType[names(psnOpts)] != ""]
-  validCommand <- paste(argType[names(checkpsnOpts)], "(", checkpsnOpts, ")", 
+  checkpsnOpts <- psnOpts[psnOptions$optType[names(psnOpts)] != ""]
+  validCommand <- paste(psnOptions$optType[names(checkpsnOpts)], 
+                        "(", checkpsnOpts, ")", 
                         sep = "")
   validArg <- sapply(validCommand, function(x) {
     eval(parse(text = x))
@@ -62,6 +52,10 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL) {
   
   checked <- checkpsnOpts[validArg]
   psnOpts <- psnOpts[!(names(psnOpts) %in% names(checkpsnOpts[!validArg]))]
+  
+  if ( !(psnOptions$optName[psnOptions$mandatory] %in% names(psnOpts) ) )
+    warning(paste("Mandatory option",psnOptions$optName[psnOptions$mandatory],
+                  "is not present in the provided option list"))
   
   list_to_PsNArgs(psnOpts)
   

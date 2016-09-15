@@ -32,6 +32,39 @@ list_to_PsNArgs <- function(x) {
     paste0(x5, collapse = " ")
 }
 
+## Parse PsN command options list
+parse_PsN_options <- function(x){
+  psnArgs <- stringr::str_trim(x)
+  
+  firstArg <- grep("^\\[ -h", psnArgs) + 1
+  lastArg <- grep("^Options enclosed", psnArgs) - 2
+  
+  psnArgs <- psnArgs[firstArg:lastArg]
+  optionalArgs <- grep("^\\[", psnArgs)
+  mandatoryArgs <- grep("^--", psnArgs)
+  psnArgs <- gsub("\\[", "", psnArgs)
+  psnArgs <- gsub("\\]", "", psnArgs)
+  psnArgs <- gsub("--", "", psnArgs)
+  psnArgs <- gsub(" ", "", psnArgs)
+  
+  ## Check types
+  psnArgs <- gsub("\\'string\\'", "is.character", psnArgs)  ## character
+  psnArgs <- gsub("\\'integer\\'", "is.wholenumber", psnArgs)  ## wholenumber / integer
+  psnArgs <- gsub("\\'number\\'", "is.double", psnArgs)  ## double precision
+  psnArgs <- gsub("!", "=is.logical", psnArgs)  ## logical / boolean
+  
+  argName <- gsub("=.*", "", psnArgs)
+  argType <- gsub(".*=", "", psnArgs)
+  names(argType) <- argName
+  argType[argType == argName] <- ""
+  
+  psnArgs <- list(optName = argName, 
+                  optType = argType,
+                  optional = optionalArgs, 
+                  mandatory = mandatoryArgs)
+  return(psnArgs)
+}
+
 ## -- from metrumrg runCommand.R --------------------------------------------- set
 ## up the call
 execute <- function(command, intern = FALSE, minimized = FALSE, invisible = TRUE) {

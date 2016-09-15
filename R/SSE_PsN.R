@@ -1,29 +1,36 @@
 #' Performs PsN SSE for a given control file and dataset
 #'
+#' @param tool PsN tool. Must be used in conjunction with installInfo data.frame.
+#' See Vignette "using rspeaksnonmem to run NONMEM and PsN".
+#' @param command PsN command to be executed at the command line
 #' @param modelFile NONMEM control stream file name (without extension)
 #' @param modelExtension NONMEM control stream file extension. Defaults to '.mod'
-#' @param addargs List of additional PsN command line arguments (format: argumentName = value or argumentName=TRUE/FALSE )
-#' @param working.dir Working directory containing control stream and where output files should be stored
+#' @param samples Number of samples for SSE
+#' @param psnOpts List of additional PsN command line arguments 
+#' (format: argumentName = value or argumentName=TRUE/FALSE )
+#' @param working.dir Working directory containing control stream and where 
+#' output files should be stored
+#' @param clean Whether to clean up additional NONMEM files and folders 
+#' following PsN call.  PsN option. Default = 1.
 #' @return PsN SSE output
 #' @examples
 #'
 #'## ----SSE:
-SSE_PsN <- function(command = NULL, modelFile = NULL, modelExtension = ".mod", nsamp = 100, 
-                    seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
-  
-  addargsText <- ifelse(!is.null(addargs),list_to_PsNArgs(addargs), "")
+SSE_PsN <- function(tool = NULL, command = NULL, 
+                    modelFile = NULL, modelExtension = ".mod", 
+                    samples = 100, psnOpts = NULL, 
+                    working.dir = NULL, clean = 1, ...) {
   
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
-  baseCommand <- ifelse( is.null( command ), 
-                         defineExecutable( tool = "SSE" , ... ) , 
-                         defineExecutable( command=command, ... ))
+  psnOpts <- c(list(samples = samples,
+                    clean = clean, directory = working.dir),
+               psnOpts)
   
-  command <- paste(baseCommand, shQuote(modelFile), " --samples=", 
-                   nsamp, " --seed=", seed, " ", 
-                   " --directory=", shQuote(working.dir),
-                   if(cleanup) " --clean=2", " ",
-                   addargsText, sep = "")
-  cat(paste(command, "\n"))
-  execute(command)
-} 
+  baseCommand <- ifelse(is.null(command), 
+                        defineExecutable(tool = "SSE", ...), 
+                        defineExecutable(command = command, ...))
+  
+  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
+          psnOpts = psnOpts)
+}
