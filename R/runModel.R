@@ -3,22 +3,28 @@
 #' @param modelFile NONMEM control stream file name (without extension)
 #' @param modelExtension NONMEM control stream file extension. Defaults to '.mod'
 #' @param addargs Additional PsN command line arguments (text string)
-#' @param working.dir Working directory containing control stream and where output files should be stored
-#' @param cleanup Whether to clean up additional NONMEM files and folders following estimation. Defaults to TRUE.
+#' @param working.dir Working directory containing control stream and where 
+#' output files should be stored
+#' @param cleanup Whether to clean up additional NONMEM files and folders 
+#' following estimation. Defaults to TRUE.
 #' @return NONMEM estimation output files
 #' @examples
-#' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', working.dir='./data')
+#' execute_PsN(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', 
+#' working.dir='./data')
 #'
 #'
-runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = F, runno = NULL, 
-    outFormat = NULL, templateModel = NULL, nsamp = 100, working.dir = NULL) {
-    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
+runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, 
+                     bootstrap = F, runno = NULL, outFormat = NULL, 
+                     templateModel = NULL, nsamp = 100, working.dir = NULL) {
+    
+  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
     
     #' Initialise output list
     output <- as.list(NULL)
     
     #' Find the run number from the Tables statements sdtab etc.
-    if (!length(runno) > 0) runno <- as.numeric(gsub("[a-z]", "", MOGobj$Table[1, "File"]))
+    if (!length(runno) > 0) 
+        runno <- as.numeric(gsub("[a-z]", "", MOGobj$Table[1, "File"]))
     
     #' Create the run directory
     #' Copy the dataset into the run directory
@@ -26,7 +32,7 @@ runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = 
     runpath <- file.path(getwd(), paste("Run", runno, sep = ""))
     dir.create(runpath)
     file.copy(MOGobj$Data[, "File"], file.path(runpath))
-
+    
     #' Using 'Run<nn>>' convention for temporary Run files
     ctlFilename <- paste("Run", runno, sep = "")
     fileNameRoot <- gsub("\\..*", "", ctlFilename)
@@ -37,7 +43,8 @@ runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = 
     
     #' estimate the model using PsN
     #' -------------------------
-    execute_PsN(modelFile = ctlFilename, addargs = "--retries=3", cleanup = F)
+    execute_PsN(modelFile = ctlFilename, 
+                psnOpts = list(retries = 3, tweak_inits = TRUE))
     
     # #' Use RNMImport to read the output files
     outNM <- RNMImport::importNm(paste(ctlFilename, ".mod", sep = ""))
@@ -62,9 +69,8 @@ runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = 
     #' Additional arguments for VPC using PsN can be passed as part of the `addargs` string.
     
     if (VPC) {
-        VPC_PsN(modelFile = ctlFilename, seed = 123, ..., 
-                addargs = paste("--lst_file=", paste(fileNameRoot, ".lst", sep = ""), 
-                                " --bin_by_count=0 --bin_array=0.125,0.375,0.75,1.25,1.75,2.5,4.5,7.5,10.5,18,30,42,60,84,108,125 --dir=VPCdir", 
+        VPC_PsN(modelFile = ctlFilename, seed = 123, ..., addargs = paste("--lst_file=", 
+            paste(fileNameRoot, ".lst", sep = ""), " --bin_by_count=0 --bin_array=0.125,0.375,0.75,1.25,1.75,2.5,4.5,7.5,10.5,18,30,42,60,84,108,125 --dir=VPCdir", 
             sep = ""))
         cleanup(path = "VPCdir", remove.folders = T)
         
@@ -83,7 +89,8 @@ runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = 
     #' -------------------------
     #' Similarly to `VPC_PsN` here we can use the bootstrap functionality in PsN directly.
     if (bootstrap) {
-        bootstrap_PsN(modelFile = ctlFilename, seed = 123, addarg = "--dir=BSdir", ...)
+        bootstrap_PsN(modelFile = ctlFilename, seed = 123, addarg = "--dir=BSdir", 
+            ...)
         cleanup(path = "BSdir", remove.folders = T)
         
         #' Summarise bootstrap output i.e. pick out relevant numbers from raw_results...csv file.
@@ -92,4 +99,4 @@ runModel <- function(MOGobj, cleanup = T, diagnostics = T, VPC = F, bootstrap = 
     return(output)
     if (length(outFormat) > 0) 
         graphics.off()
-} 
+}

@@ -123,7 +123,7 @@ newThetas <- warfTemplateModel$Theta
 newInits <- c(0.25, 10, 4, 0.25, 0, 0.1)
 newThetas[,"Est"] <- newInits
 
-newModel <- updateModel(parsedObject = warfTemplateModel, theta=newThetas)
+newModel <- updateModel(parsedObject = warfTemplateModel, theta=newThetas, runno=1)
 newModel
 ```
 
