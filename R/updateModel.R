@@ -9,14 +9,17 @@
 #' @param data $Data list (NONMEM $DATA) within the R Model Object
 #' @param dataNames $Input list (NONMEM $INPUT) within the R Model Object
 #' @param tables $Tables list (NONMEM $TABLES) within the R Model Object
-#' @param addPsNHeader Logical - whether to include PsN Header information. Default FALSE.
+#' @param addPsNHeader Logical - whether to include PsN Header information. 
+#' Default FALSE.
 #' @return NONMEM estimation output files
 #' @examples
 
-updateModel <- function(parsedObject, problem = parsedObject$Problem, theta = parsedObject$Theta, 
-    omega = parsedObject$Omega, sigma = parsedObject$Sigma, task = parsedObject$Estimates, 
-    data = parsedObject$Data, dataNames = parsedObject$Input, tables = parsedObject$Tables, 
-    addPsNHeader = F, runno=0, ...) {
+updateModel <- function(parsedObject, problem = parsedObject$Problem, 
+                        theta = parsedObject$Theta, omega = parsedObject$Omega, 
+                        sigma = parsedObject$Sigma, task = parsedObject$Estimates,
+                        data = parsedObject$Data, dataNames = parsedObject$Input, 
+                        tables = parsedObject$Tables, 
+    addPsNHeader = F, runno = 0, ...) {
     newObject <- parsedObject
     newObject$Problem <- problem
     newObject$Theta <- theta
@@ -27,8 +30,9 @@ updateModel <- function(parsedObject, problem = parsedObject$Problem, theta = pa
     newObject$Input <- dataNames
     newObject$Tables <- tables
     
-    newObject$Tables$File <- gsub("[0:9]",runno,parsedObject$Tables$File)
+    newObject$Tables$File <- gsub("[0:9]", runno, parsedObject$Tables$File)
     
-    if (addPsNHeader) newObject$Problem <- PsNHeader(parsedObject, ...)
+    if (addPsNHeader) 
+        newObject$Problem <- PsNHeader(parsedObject, ...)
     return(newObject)
-} 
+}

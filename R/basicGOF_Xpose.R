@@ -7,7 +7,8 @@
 
 basicGOF_Xpose <- function(runno = NULL, ...) {
     ## ----setupRunnoforXpose--------------------------------------------------
-    if (!length(runno) > 0) runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
+    if (!length(runno) > 0) 
+        runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
     
     ## ----createXpdb----------------------------------------------------------
     xpdb <- xpose4::xpose.data(runno, quiet = T)
@@ -21,4 +22,4 @@ basicGOF_Xpose <- function(runno = NULL, ...) {
     print(xpose4::wres.vs.pred(xpdb))
     print(xpose4::ranpar.hist(xpdb))
     print(xpose4::ind.plots(xpdb, layout = c(4, 4)))
-} 
+}

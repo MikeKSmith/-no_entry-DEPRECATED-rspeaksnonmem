@@ -1,34 +1,38 @@
 #' Performs VPC of a model using PsN VPC
 #'
+#' @param tool PsN tool. Must be used in conjunction with installInfo data.frame.
+#' See Vignette "using rspeaksnonmem to run NONMEM and PsN".
+#' @param command PsN command to be executed at the command line
 #' @param modelFile NONMEM control stream file name (without extension)
-#' @param modelExtension NONMEM control stream file extension. Defaults to '.mod'
-#' @param addargs List of additional PsN command line arguments (format: argumentName = value or argumentName=TRUE/FALSE )
-#' @param working.dir Working directory containing control stream and where output files should be stored
-#' @param cleanup Whether to clean up additional NONMEM files and folders following estimation. Defaults to TRUE.
+#' @param modelExtension NONMEM control stream file extension. Defaults to 
+#' '.mod'
+#' @param samples Number of samples for VPC. Mandatory option for PsN VPC. 
+#' @param psnOpts List of additional PsN command line options 
+#' (format: optionName = value or optionName=TRUE/FALSE )
+#' @param working.dir Working directory containing control stream and where 
+#' output files should be stored
+#' @param clean Whether to clean up additional NONMEM files and folders 
+#' following estimation.  PsN option. Default = 1.
 #' @return NONMEM estimation output files
 #' @examples
 #' VPC_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #' @export
 
-VPC_PsN <- function(command = NULL, modelFile = NULL, nsamp = 100, 
-                    seed = 123456, addargs = NULL, cleanup = T, working.dir = NULL, ...) {
+VPC_PsN <- function(command = NULL, modelFile = NULL, samples = 100, 
+                    psnOpts = NULL, 
+                    clean = 1, working.dir = NULL, ...) {
 
-  addargsText <- ifelse(!is.null(addargs),list_to_PsNArgs(addargs), "")
-  
   working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
   
-  # addargs <- ifelse(addargs==NULL, "autobin=T",addargs)
+  psnOpts <- c(list(samples = samples, dir = working.dir, clean = clean), 
+               psnOpts)
   
-  baseCommand <- ifelse( is.null( command ), 
-                         defineExecutable( tool = "VPC" , ... ) , 
-                         defineExecutable( command=command, ... ))
+  baseCommand <- ifelse(is.null(command), 
+                        defineExecutable(tool = "VPC", ...), 
+                        defineExecutable(command = command, ...))
   
-  command <- paste(baseCommand, " ", shQuote(modelFile), " --samples=", 
-                   nsamp, " --seed=", seed, " ", 
-                   " --directory=", shQuote(working.dir),
-                   if(cleanup) " --clean=2"," ",
-                   addargsText, 
-                   sep = "")
-  cat(paste(command, "\n"))
-  execute(command)
-} 
+  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
+          psnOpts = psnOpts)
+}
+
+
