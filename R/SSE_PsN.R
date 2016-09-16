@@ -21,15 +21,22 @@ SSE_PsN <- function(tool = NULL, command = NULL,
                     samples = 100, psnOpts = NULL, 
                     working.dir = NULL, clean = 1, ...) {
   
-  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
+  if (!is.null(working.dir)) {
+    psnOpts <- c(list(directory = working.dir),
+                 psnOpts)
+  }
   
-  psnOpts <- c(list(samples = samples,
-                    clean = clean, directory = working.dir),
+  if (clean != 1) {
+    psnOpts <- c(list(clean = clean),
+                 psnOpts)
+  }
+  
+  psnOpts <- c(list(samples = samples),
                psnOpts)
   
   baseCommand <- ifelse(is.null(command), 
                         defineExecutable(tool = "SSE", ...), 
-                        defineExecutable(command = command, ...))
+                        defineExecutable(command = command))
   
   callPsN(baseCommand = baseCommand, modelFile = modelFile, 
           psnOpts = psnOpts)

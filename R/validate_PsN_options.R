@@ -12,15 +12,13 @@
 validate_PsN_options <- function(command = NULL, psnOpts = NULL, 
                                  perl_options_command = "psn_options") {
 
-  baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = tool), 
-                        defineExecutable(command = command))
-
+  if (is.null(command)) stop("Expecting a valid PsN command")
+  
   psnOptionCommand <- defineExecutable(command = "psn_options*")
   psnCommon <- system( paste(psnOptionCommand, "-h"), intern = TRUE)
   psnCommon <- parse_PsN_options(psnCommon)
   
-  command <- paste(baseCommand, "-h ")
+  command <- paste(command, "-h ")
   psnOptions <- system(command, intern = TRUE)
   psnOptions <- parse_PsN_options(psnOptions)
   psnOptions$optional <- psnOptions$optional + length(psnCommon$optName)
@@ -53,8 +51,9 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL,
   checked <- checkpsnOpts[validArg]
   psnOpts <- psnOpts[!(names(psnOpts) %in% names(checkpsnOpts[!validArg]))]
   
-  if ( !(psnOptions$optName[psnOptions$mandatory] %in% names(psnOpts) ) )
-    warning(paste("Mandatory option",psnOptions$optName[psnOptions$mandatory],
+  if ( (length(psnOptions$mandatory) > 0) )
+    if (!(psnOptions$optName[psnOptions$mandatory] %in% names(psnOpts) ) )
+    stop(paste("Mandatory option",psnOptions$optName[psnOptions$mandatory],
                   "is not present in the provided option list"))
   
   list_to_PsNArgs(psnOpts)

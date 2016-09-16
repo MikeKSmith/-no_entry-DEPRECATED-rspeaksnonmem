@@ -188,12 +188,7 @@ myPopPKWorkflow <- function(model, controlFile, lstFile, dataFile, workingDir=NU
   print(xpose4::wres.vs.pred(xpdb))
   print(xpose4::ranpar.hist(xpdb))
   print(xpose4::ind.plots(xpdb, layout = c(4, 4)))  
-  
-  results <- importNm(conFile = controlFile, reportFile = lstFile)
-  out <- list(OFV = getObjective(results),
-              thetas = getThetas(results, what = c("initial","final","stderrors")),
-              omegas = getOmegas(results, what = c("initial","final","stderrors")))
-  out
+
   on.exit(setwd(origWD))
 }
 ```

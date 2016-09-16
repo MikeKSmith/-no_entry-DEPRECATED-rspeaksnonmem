@@ -17,15 +17,19 @@
 execute_PsN <- function(tool = NULL, command = NULL, 
                         modelFile = NULL, psnOpts = NULL, 
                         clean = 1, working.dir = NULL, ...) {
-  
-  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-  
-  psnOpts <- c(list(clean = clean, directory = working.dir),
-               psnOpts)
+  if (!is.null(working.dir)) {
+    psnOpts <- c(list(directory = working.dir),
+                 psnOpts)
+  }
+
+  if (clean != 1) {
+    psnOpts <- c(list(clean = clean),
+                 psnOpts)
+  }
   
   baseCommand <- ifelse(is.null(command), 
                         defineExecutable(tool = "execute", ...),
-                        defineExecutable(command = command, ...))
+                        defineExecutable(command = command))
   
   callPsN(baseCommand = baseCommand, modelFile = modelFile, 
           psnOpts = psnOpts)

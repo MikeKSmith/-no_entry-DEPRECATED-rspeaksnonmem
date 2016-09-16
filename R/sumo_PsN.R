@@ -17,14 +17,17 @@ sumo_PsN <- function(tool = NULL, command = NULL,
                      lstFile = NULL, psnOpts = NULL, 
                      working.dir = NULL, ...) {
   
-  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-  
+  if (!is.null(working.dir)) {
   psnOpts <- c(list(directory = working.dir),
                psnOpts)
+  }
   
-  baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "sumo", ...), 
-                        defineExecutable(command = command, ...))
+  if (is.null(command) && is.null(installInfo))
+    stop("command or installInfo argument must be provided")
+  
+  baseCommand <- ifelse(!is.null(command) | !is.null(installInfo), 
+                        defineExecutable(tool = "sumo", installInfo=installInfo), 
+                        defineExecutable(command = command))
   
   callPsN(baseCommand = baseCommand, modelFile = lstFile, 
           psnOpts = psnOpts)

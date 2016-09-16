@@ -14,18 +14,23 @@
 #' @return PsN SSE output
 #' @examples
 bootstrap_PsN <- function(tool = NULL, command = NULL, 
-                          modelFile = NULL, modelExtension = ".mod", 
+                          modelFile = NULL, 
                           psnOpts = NULL, clean = 1, working.dir = NULL, 
                           ...) {
   
-  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
+  if (!is.null(working.dir)) {
+    psnOpts <- c(list(directory = working.dir),
+                 psnOpts)
+  }
   
-  psnOpts <- c(list(directory = working.dir, clean = clean), 
-               psnOpts)
+  if (clean != 1) {
+    psnOpts <- c(list(clean = clean),
+                 psnOpts)
+  }
   
   baseCommand <- ifelse(is.null(command), 
                         defineExecutable(tool = "bootstrap", ...), 
-                        defineExecutable(command = command, ...))
+                        defineExecutable(command = command))
   
   callPsN(baseCommand = baseCommand, modelFile = modelFile, 
           psnOpts = psnOpts)

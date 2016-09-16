@@ -22,14 +22,22 @@ VPC_PsN <- function(command = NULL, modelFile = NULL, samples = 100,
                     psnOpts = NULL, 
                     clean = 1, working.dir = NULL, ...) {
 
-  working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
+  if (!is.null(working.dir)) {
+    psnOpts <- c(list(directory = working.dir),
+                 psnOpts)
+  }
+  
+  if (clean != 1) {
+    psnOpts <- c(list(clean = clean),
+                 psnOpts)
+  }
   
   psnOpts <- c(list(samples = samples, dir = working.dir, clean = clean), 
                psnOpts)
   
   baseCommand <- ifelse(is.null(command), 
                         defineExecutable(tool = "VPC", ...), 
-                        defineExecutable(command = command, ...))
+                        defineExecutable(command = command))
   
   callPsN(baseCommand = baseCommand, modelFile = modelFile, 
           psnOpts = psnOpts)

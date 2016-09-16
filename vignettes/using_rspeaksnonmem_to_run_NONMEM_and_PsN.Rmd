@@ -58,7 +58,7 @@ NONMEMcommand <- "nmfe72"
 
 tools <- c("NONMEM", "execute", "VPC", "bootstrap", "SSE", "runrecord", "sumo")
 installPaths <- c("c:/nm72", rep(perlPath,length(tools)-1))
-commands <- sapply(tools, function(x) ifelse( x == "NONMEM", NONMEMcommand, paste( x, PsNVersion, sep = "-" ) ) )
+commands <- sapply(tools, function(x) ifelse( x == "NONMEM", NONMEMcommand, paste( casefold(x,upper = FALSE), PsNVersion, sep = "-" ) ) )
 
 installedSoftware <- data.frame( cbind( tool = tools, path = installPaths, command = commands ), 
                                  row.names=NULL, stringsAsFactors = F)
@@ -93,11 +93,11 @@ for each tool (shown above) which is used to create the command for the system p
 ancillary files from the working directory.
 
 ```{r NONMEM }
-estimate_NM(modelFile="theophylline.mod", installInfo=installedSoftware, cleanup=T)
+estimate_NM(modelFile = "theophylline.mod", installInfo = installedSoftware)
 ```
 ## Returning results from NONMEM output 
 ```{r Sumo}
-sumo_PsN(lstFile="theophylline.lst", installInfo=installedSoftware)
+sumo_PsN(lstFile = "theophylline.lst", installInfo = installedSoftware)
 ```
 
 We can also use RNMImport to read the NONMEM output:
@@ -163,17 +163,18 @@ The PsN functions work in an analogous way. Here we use ```execute_PsN``` to run
 functionality for restarting, tweaking initial estimates etc. Additional arguments used for PsN can be passed through the
 ```addargs``` argument to the function:
 
-```{r executePsN, include=FALSE}
+```{r executePsN}
 execute_PsN(modelFile='theophylline.mod', command="execute-3.5.4", 
-            addargs=list(tweak_inits=TRUE, retries=3))
+            psnOpts=list(tweak_inits=TRUE, retries=3))
 ```
 ## VPC 
 Next we can perform VPC using PsN:
 ```{r VPC_PsN}
-VPC_PsN(modelFile='theophylline.mod', installInfo=installedSoftware, working.dir="Run1_VPC",
-              nsamp=100, seed=54321, 
-              addargs=list(lst="theophylline.lst", bin_by_count=0,
-              bin_array="0.125,0.375,0.75,1.5,2.5,5,6,8,10,16,48"))
+VPC_PsN( modelFile='theophylline.mod', installInfo=installedSoftware,
+         working.dir="Run1_VPC", 
+         samples=100, seed="54321",
+         psnOpts=list(lst="theophylline.lst", bin_by_count=0,
+                      bin_array="0.125,0.375,0.75,1.5,2.5,5,6,8,10,16,48"))
 ```
 
 and then use the Xpose function xpose_vpc to plot the result:

@@ -16,44 +16,50 @@
 runRecord_PsN <- function(tool = NULL, command = NULL, to = NULL, 
                           runRoot = "Run", modelExtension = ".mod",
                           outputExtension = ".lst", psnOpts = NULL, 
-                          clean = 2, working.dir = NULL, ...) {
-    
-    working.dir <- ifelse(is.null(working.dir), getwd(), working.dir)
-    
-    psnOpts <- c(list(clean = 2, dir = working.dir),
+                          clean = 1, working.dir = NULL, ...) {
+  
+  if (!is.null(working.dir)) {
+    psnOpts <- c(list(directory = working.dir),
                  psnOpts)
-    
-    modelFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", modelExtension,
-                                             sep = ""), 
-                             recursive = T)
-    lstFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", outputExtension, 
-                                           sep = ""),
+  }
+  
+  if (clean != 1) {
+    psnOpts <- c(list(clean = clean),
+                 psnOpts)
+  }
+  
+  psnOpts <- c(list(to=to),
+               psnOpts) 
+  
+  modelFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", modelExtension,
+                                           sep = ""), 
                            recursive = T)
-    
-    runpath <- file.path(getwd(), "RunRecord")
-    dir.create(runpath)
-    
-    file.copy(modelFiles, file.path(runpath))
-    file.copy(lstFiles, file.path(runpath))
-    
-    baseCommand <- ifelse(is.null(command), defineExecutable(tool = "runRecord", 
-        ...), defineExecutable(command = command, ...))
-    
-    command <- paste(baseCommand, " --to=", to, " ", " --directory=", working.dir, 
-        " ", psnOpts, sep = "")
-    
-    cat(paste(command, "\n"))
-    execute(command)
-    
-    runRecord <- read.table("AAruninfo.txt", sep = ";", row.names = NULL, skip = 5, 
-        header = F, stringsAsFactors = F, as.is = T)
-    
-    names(runRecord) <- scan("AAruninfo.txt", sep = ";", what = "character", skip = 4, 
-        nlines = 1)
-    
-    runRecord$Run <- seq(1, to)
-    runRecord <- runRecord[, -ncol(runRecord)]
-    if (cleanup) 
-        cleanup()
-    return(runRecord)
+  lstFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", outputExtension, 
+                                         sep = ""),
+                         recursive = T)
+  
+  runpath <- file.path(working.dir, "RunRecord")
+  dir.create(runpath)
+  
+  file.copy(modelFiles, file.path(runpath))
+  file.copy(lstFiles, file.path(runpath))
+  
+  baseCommand <- ifelse(is.null(command), 
+                        defineExecutable(tool = "runRecord", ...), 
+                        defineExecutable(command = command))
+  
+  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
+          psnOpts = psnOpts)
+  
+  runRecord <- read.table("AAruninfo.txt", sep = ";", row.names = NULL, skip = 5, 
+                          header = F, stringsAsFactors = F, as.is = T)
+  
+  names(runRecord) <- scan("AAruninfo.txt", sep = ";", what = "character", skip = 4, 
+                           nlines = 1)
+  
+  runRecord$Run <- seq(1, to)
+  runRecord <- runRecord[, -ncol(runRecord)]
+  if (cleanup) 
+    cleanup()
+  return(runRecord)
 }
