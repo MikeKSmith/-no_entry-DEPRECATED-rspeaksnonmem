@@ -91,7 +91,7 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
                 modelEnd <- nextBlock$line - 1
                 
                 codeLines <- control[modelStart:modelEnd]
-                codeLines <- paste(codeLines, "\n")
+                codeLines <- paste(codeLines, "\n", sep="")
                 ## Last line doesn't need the line break
                 codeLines[length(codeLines)] <- sub("\\n", "", codeLines[length(codeLines)])
                 modelBlockCode[[i]] <- codeLines
@@ -142,7 +142,7 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
                     Theta.txt[i] <- Theta[i, 2]
                   } else {
                     ## Else create lower and/or upper bounded THETAs
-                    Theta.txt[i] <- paste("(", paste(Theta[i, ], collapse = ","), 
+                    Theta.txt[i] <- paste("(", paste(Theta[i, ], collapse = ", "), 
                       ")")
                     Theta.txt[i] <- gsub("NA", "", Theta.txt[i])
                   }
@@ -295,19 +295,23 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
         ## Check for existence of $Tables in original code
         Tables.txt <- NULL
         if (!is.null(control2$Tables)) {
-            ## Collect $TABLE variable strings, delete comma separator, append ONEHEADER
-            ## NOPRINT statements
-            tableBlockName <- ifelse(length(grep("Tables", ctrlmerged$RNMI.block)) > 
-                0, ctrlmerged$orig.block[grep("Tables", ctrlmerged$RNMI.block)], 
-                "")
-            tableBlockName <- paste("$", tableBlockName, sep = "")
-            Tables.txt <- apply(control2$Table, 1, function(x) {
-                paste(tableBlockName, " ", gsub(",", "", x["Columns"]), " NOAPPEND", 
-                  " ONEHEADER", " NOPRINT FILE=", x[1], sep = "")
-            })
-            Tables.txt <- gsub("ETA\\.", "ETA\\(", Tables.txt, perl = T)
-            Tables.txt <- gsub("\\. ", "\\) ", Tables.txt, perl = T)
-            control2$Tables <- paste(Tables.txt, collapse = "\n")
+          ## Collect $TABLE variable strings, delete comma separator, append ONEHEADER NOPRINT
+          ## statements
+          tableBlockName <- ifelse(length(grep("Tables",ctrlmerged$RNMI.block))>0, 
+                                   ctrlmerged$orig.block[grep("Tables",ctrlmerged$RNMI.block)],
+                                   "")
+          tableBlockName <- paste("$",tableBlockName,sep="") 
+          for(i in 1:nrow(control2$Tables)){
+            x <- control2$Tables[i,]
+            txt <- paste(tableBlockName, gsub(",", "", x$Columns))
+            txt <- ifelse(!x$append, paste(txt, "NOAPPEND"), txt)
+            txt <- ifelse(!x$NoHeader, paste(txt, "ONEHEADER"), txt)
+            txt <- ifelse(x$firstOnly, paste(txt, "FIRSTONLY"), txt)
+            Tables.txt[i] <- paste(txt, " NOPRINT"," FILE=", x[1], sep = "")
+          }
+          Tables.txt <- gsub("ETA\\.", "ETA\\(", Tables.txt, perl = T)
+          Tables.txt <- gsub("\\. ", "\\) ", Tables.txt, perl = T)
+          control2$Tables <- paste(Tables.txt, collapse="\n")
         }
         
         ## Ensure that multiple $EST case has $EST for each line First $Table statement
