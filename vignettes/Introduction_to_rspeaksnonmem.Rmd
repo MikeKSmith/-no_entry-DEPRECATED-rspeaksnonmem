@@ -37,7 +37,8 @@ Using a template model and a user-specified workflow function e.g. a function co
 `importNmMod` which reads and parses the NONMEM control stream. `rspeaksnonmem` then works with
 the data, parameter values, and task information separately from the model.
 
-Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
+Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed.
+Install RNMIMport from Github using the `devtools` package:
 
 ```{r install_RNMImport, include=F}
   #devtools::install_git("MangoTheCat/RNMImport")
@@ -50,9 +51,10 @@ Eventually, `rspeaksnonmem` will be released to CRAN, but while still in develop
     #devtools::install_github("MikeKSmith/rspeaksnonmem")
 ```
 
-
+Alternatively, if the source files are available locally, you can load the functions
+directly.
 ```{r,echo=FALSE,results='hide',message=FALSE}
- devtools::load_all(pkg=".")
+ devtools::load_all(pkg = ".")
  devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
 ```
 
@@ -66,12 +68,15 @@ Copy an example dataset and model to a directory of your choice
 ```{r,results='hide',echo=T}
 getwd()
 
-file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_conc_pca.csv"),
-            to = getwd(), overwrite=T )
-file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin_bootstrap50.dta"),
-            to = getwd(), overwrite=T )
-file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"warfarin.ctl"),
-            to = getwd(), overwrite=T )
+file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
+                           "warfarin_conc_pca.csv"),
+            to = getwd(), overwrite = T )
+file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
+                           "warfarin_bootstrap50.dta"),
+            to = getwd(), overwrite = T )
+file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
+                           "warfarin.ctl"),
+            to = getwd(), overwrite = T )
 ```
 
 The initial model within the workflow should act as a "template" for modifications. The best practice is to use a model where all possible parameters are defined (including OMEGAs and covariances / correlations) but where it is possible to fix parameters to zero or some null value. We can then run and test a wide variety of models simply by updating the $THETA, $OMEGA and $SIGMA parameters to allow estimation.
@@ -100,7 +105,7 @@ Using `rspeaksnonmem` the user can then update elements of the model using this 
 
 Similarly, `getNMParameterObjects` returns the $THETA, $OMEGA and $SIGMA records.
 ```{r getNMParameterObjects}
-params <- getNMParameterObjects(warfModel, problemNo=1)
+params <- getNMParameterObjects(warfModel)
 params
 ```
 
@@ -108,8 +113,8 @@ Together the Data, Parameters, Model and Task information forms a "Modelling Obj
 
 The template model has POP_TLAG fixed to zero. To "unfix" this, we need to provide lower, initial (Est) and upper bounds for POP_TLAG. Note that params$Theta has named rows using the comments after each THETA line in the NMTRAN control stream.
 ```{r specifyTHETAs}
-FIX_POP_TLAG <- list(Lower=0, Est=0, Upper=0, FIX=TRUE, comments="POP_TLAG")
-EST_POP_TLAG <- list(Lower=0, Est=0.75, Upper=1.5, FIX=FALSE, comments="POP_TLAG")
+FIX_POP_TLAG <- list(Lower = 0, Est = 0, Upper = 0, FIX = TRUE, comments = "POP_TLAG")
+EST_POP_TLAG <- list(Lower = 0, Est = 0.75, Upper = 1.5, FIX = FALSE, comments = "POP_TLAG")
 
 thetaNoLag <- warfTemplateModel$Theta
 thetaNoLag["POP_TLAG",] <- FIX_POP_TLAG
@@ -120,42 +125,89 @@ thetaLag["POP_TLAG",] <- EST_POP_TLAG
 
 The template model has proportional error only. RUV is set up as THETA * SIGMA where SIGMA ~ N(0,1).
 ```{r specifyRUV}
-ruvAdd <- list(Lower=0, Est=0.1, FIX=FALSE, comments="RUV_ADD")
+ruvAdd <- list(Lower = 0, Est = 0.1, FIX = FALSE, comments = "RUV_ADD")
 thetaLagComboRUV <- thetaLag
 thetaLagComboRUV["RUV_ADD",] <- ruvAdd
 ```
 
 The template model specifies an OMEGA block (covariance) between ETA_CL and ETA_V.
 ```{r specifyOMEGAs}
-fullBlockOmega <- list(values=MSToolkit::parseCovMatrix(c(0.1, 0.01, 0.1, 0.01, 0.01, 0.1, 0.01, 0.01, 0.01, 0.1), nCov=4),
-                       block=4, FIX=FALSE)
-CLVKABlock <- list(list(values=MSToolkit::parseCovMatrix(c(0.1, 0.01, 0.1, 0.01, 0.01, 0.1), nCov=3),
-                       block=3, FIX=FALSE),
-                   list(values=0.1, FIX=FALSE))
+fullBlockOmega <- list(values = MSToolkit::parseCovMatrix(
+  c(0.1, 
+    0.01, 0.1, 
+    0.01, 0.01, 0.1, 
+    0.01, 0.01, 0.01, 0.1), nCov = 4),
+                       block = 4, FIX = FALSE)
+CLVKABlock <- list(list(values = MSToolkit::parseCovMatrix(
+  c(0.1, 
+    0.01, 0.1, 
+    0.01, 0.01, 0.1), nCov = 3),
+                       block = 3, FIX = FALSE),
+                   list(values = 0.1, FIX = FALSE))
 CLVBlock_noTLAG <- params$OMEGA
-diagPPV <- list(values=diag(c(0.1,0.1,0.1,0.1)), FIX=FALSE)
-diagPPV_noTLAG <- list(list(values=diag(c(0.1,0.1,0.1)), FIX=FALSE),
-                            list(values=0, FIX=TRUE))
-diagCLV_noKATLAG <- list(data.frame(values=c(0.1, 0.1, 0, 0), FIX=c(rep(FALSE,2),rep(TRUE,2)),
-                               comments=c("PPV_CL","PPV_V","PPV_KA","PPV_TLAG")))
+diagPPV <- list(values = diag(c(0.1,0.1,0.1,0.1)), FIX = FALSE)
+diagPPV_noTLAG <- list(list(values = diag(c(0.1,0.1,0.1)), FIX = FALSE),
+                            list(values = 0, FIX = TRUE))
+diagCLV_noKATLAG <- list(data.frame(values = c(0.1, 0.1, 0, 0), 
+                                    FIX = c(rep(FALSE,2), rep(TRUE,2)),
+                               comments = c("PPV_CL","PPV_V","PPV_KA","PPV_TLAG")))
 ```
 
 We can now combine these to test a number of possible models:
 ```{r defineModels}
-  run1 <- updateModel(warfTemplateModel, theta=thetaNoLag, omega=diagCLV_noKATLAG, data=newData, runno=1) ## First model
-  run2 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagCLV_noKATLAG, data=newData,   runno=2)  ## Add POP_TLAG
-  run3 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV_noTLAG, data=newData,     runno=3)  ## Add PPV_KA
-  run4 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVBlock_noTLAG, data=newData,    runno=4)  ## Change to block CL, V
-  run5 <- updateModel(warfTemplateModel, theta=thetaLag, omega=diagPPV, data=newData,            runno=5)  ## Add PPV_TLAG
-  run6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=CLVKABlock, data=newData,         runno=6)  ## Change to block CL, V, KA
-  run6 <- updateModel(warfTemplateModel, theta=thetaLag, omega=fullBlockOmega, data=newData,     runno=7)  ## full block OMEGA
-  run7 <- updateModel(warfTemplateModel, theta=thetaLagComboRUV, omega=fullBlockOmega, data=newData, runno=8)  ## Combined RUV model (add + prop) 
+  run1 <- updateModel(warfTemplateModel, 
+                      theta = thetaNoLag, 
+                      omega = diagCLV_noKATLAG, 
+                      data = newData, 
+                      runno = 1) ## First model
+
+  run2 <- updateModel(warfTemplateModel, 
+                      theta = thetaLag, 
+                      omega = diagCLV_noKATLAG, 
+                      data = newData,   
+                      runno = 2)  ## Add POP_TLAG
+  
+  run3 <- updateModel(warfTemplateModel, 
+                      theta = thetaLag, 
+                      omega = diagPPV_noTLAG, 
+                      data = newData,     
+                      runno = 3)  ## Add PPV_KA
+  
+  run4 <- updateModel(warfTemplateModel, 
+                      theta = thetaLag, 
+                      omega = CLVBlock_noTLAG, 
+                      data = newData,    
+                      runno = 4)  ## Change to block CL, V
+  
+  run5 <- updateModel(warfTemplateModel, 
+                      theta = thetaLag, 
+                      omega = diagPPV, 
+                      data = newData,            
+                      runno = 5)  ## Add PPV_TLAG
+  
+  run6 <- updateModel(warfTemplateModel, 
+                      theta = thetaLag, 
+                      omega = CLVKABlock, 
+                      data = newData,         
+                      runno = 6)  ## Change to block CL, V, KA
+  
+  run6 <- updateModel(warfTemplateModel, 
+                      theta = thetaLag, 
+                      omega = fullBlockOmega, 
+                      data = newData,     
+                      runno = 7)  ## full block OMEGA
+  
+  run7 <- updateModel(warfTemplateModel, 
+                      theta = thetaLagComboRUV, 
+                      omega = fullBlockOmega, 
+                      data = newData, 
+                      runno = 8)  ## Combined RUV model (add + prop) 
 ```
 
 We can define the the sequence of steps (workflow) we want to take with each model:
 ```{r defineWorkflow}
 myPopPKWorkflow <- function(model, controlFile, lstFile, dataFile, workingDir=NULL){
-  if(is.null(workingDir)) workingDir <- file.path(getwd(),deparse(substitute(model)))
+  if ( is.null(workingDir) ) workingDir <- file.path(getwd(),deparse(substitute(model)))
   dir.create(workingDir)
 
   file.copy(from = model$Data[,"File"], to = workingDir)
@@ -163,13 +215,13 @@ myPopPKWorkflow <- function(model, controlFile, lstFile, dataFile, workingDir=NU
   origWD <- getwd()
   setwd(workingDir)
     
-  controlFile <- paste(deparse(substitute(model)),".ctl",sep="")
-  lstFile <-paste(deparse(substitute(model)),".lst",sep="")
+  controlFile <- paste(deparse(substitute(model)),".ctl",sep = "")
+  lstFile <- paste(deparse(substitute(model)),".lst",sep = "")
  
   writeNMControlStream(templateModel = warfModel$Raw, parsedControl = list(model),
                        outputFile = controlFile)
 
-  estimate_NM(modelFile = controlFile, lstFile=lstFile, 
+  estimate_NM(modelFile = controlFile, lstFile = lstFile, 
               command = "nonmem-7.2", cleanup = T)
               
   sumo_PsN(command = "sumo-3.5.4", listFile = lstFile)

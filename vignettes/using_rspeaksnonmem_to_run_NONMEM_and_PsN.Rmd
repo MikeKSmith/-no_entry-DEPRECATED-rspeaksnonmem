@@ -32,7 +32,7 @@ the data, parameter values, and task information separately from the model.
 Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
 
 ```{r install_RNMImport, include=F}
-  #devtools::install_git("MangoTheCat/RNMImport")
+  #devtools::install_github("MikeKSmith/RNMImport")
 ```
 
 ### Install rspeaksnonmem
@@ -81,9 +81,9 @@ Copy an example dataset and model to a directory of your choice
 ```{r,results='hide',echo=T}
 getwd()
 
-file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"THEO.dat"),
+file.copy(from = file.path(system.file("inst/exdata/", package="rspeaksnonmem"),"THEO.dat"),
             to = getwd(), overwrite=T )
-file.copy(from = file.path(system.file("exdata", package="rspeaksnonmem"),"Theophylline.mod"),
+file.copy(from = file.path(system.file("inst/exdata", package="rspeaksnonmem"),"Theophylline.mod"),
             to = getwd(), overwrite=T )
 ```
 

@@ -30,9 +30,9 @@ template. This ensures that the written NONMEM control stream mirrors as closely
 `importNmMod` which reads and parses the NONMEM control stream. `rspeaksnonmem` then works with
 the data, parameter values, and task information separately from the model.
 
-Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
+Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on Github. You can install from there using:
 
-```{r install_RNMImport, include=F}
+```{r install_RNMImport, eval = FALSE}
   #devtools::install_git("MangoTheCat/RNMImport")
 ```
 
@@ -45,7 +45,7 @@ Eventually, `rspeaksnonmem` will be released to CRAN, but while still in develop
 
 
 ```{r,echo=FALSE,results='hide',message=FALSE}
- devtools::load_all(pkg=".")
+ devtools::load_all(pkg = ".")
  devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
 ```
 
