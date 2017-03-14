@@ -12,6 +12,8 @@
 validate_PsN_options <- function(command = NULL, psnOpts = NULL, 
                                  perl_options_command = "psn_options") {
 
+  require(dplyr)
+  
   if (is.null(command)) stop("Expecting a valid PsN command")
   
   psnOptionCommand <- defineExecutable(command = "psn_options*")
@@ -21,24 +23,23 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL,
   command <- paste(command, "-h ")
   psnOptions <- system(command, intern = TRUE)
   psnOptions <- parse_PsN_options(psnOptions)
-  psnOptions$optional <- psnOptions$optional + length(psnCommon$optName)
-  psnOptions$mandatory <- psnOptions$mandatory + length(psnCommon$optName)
-  
-  psnOptions <- mapply(c, psnCommon, psnOptions)
+
+  psnOptions <- dplyr::union(psnOptions, psnCommon)
   
   ## Check psnOpts names
-  matchedNames <- sapply(names(psnOpts),function(x)pmatch(x,psnOptions$optName))
+  matchedNames <- sapply(names(psnOpts),function(x)pmatch(x,psnOptions$name))
   validName <- !is.na(matchedNames)
   if (!all(validName)) 
     warning(paste(names(psnOpts[!validName]),
                   "is not a valid PsN argument",collapse = "\n"))
-  
+  if (!any(validName)) return("")
+
   psnOpts <- psnOpts[validName]
-  names(psnOpts) <- psnOptions$optName[matchedNames]
+  names(psnOpts) <- psnOptions$name[matchedNames[validName]]
   
   quotedStrings <- sapply(psnOpts, is.character)
   psnOpts[quotedStrings] <- shQuote(psnOpts[quotedStrings])
-  psnOptType <- psnOptions$optType[names(psnOpts)]
+  psnOptType <- psnOptions$type[matchedNames[validName]]
   checkOptType <- psnOptType
   checkOptType[psnOptType==""] <- "is.logical"
   checkArg <- paste(checkOptType, "(",psnOpts,")",sep="")
@@ -52,14 +53,16 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL,
   
   checked <- psnOpts[validArg]
 
-  if ( (length(psnOptions$mandatory) > 0) )
-    if (!(psnOptions$optName[psnOptions$mandatory] %in% names(psnOpts) ) )
-    stop(paste("Mandatory option",psnOptions$optName[psnOptions$mandatory],
+  if ( any(psnOptions$mandatory) )
+    if (!(psnOptions$name[psnOptions$mandatory] %in% names(psnOpts) ) )
+    stop(paste("Mandatory option",psnOptions$name[psnOptions$mandatory],
                   "is not present in the provided option list"))
 
+  if (length(checked)>0) {
   optList <- list(name = names(checked),
                   value = as.character(checked), 
                   type = psnOptType[validArg])
   
   list_to_PsNArgs(optList)
+  } else return("")
 }

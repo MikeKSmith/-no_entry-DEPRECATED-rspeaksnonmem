@@ -39,8 +39,8 @@ parse_PsN_options <- function(x){
   lastArg <- grep("^Options enclosed", psnArgs) - 2
   
   psnArgs <- psnArgs[firstArg:lastArg]
-  optionalArgs <- grep("^\\[", psnArgs)
-  mandatoryArgs <- grep("^--", psnArgs)
+  optional <- regexpr ("^\\[", psnArgs)>0
+  mandatory <- regexpr("^--", psnArgs)>0
   psnArgs <- gsub("\\[", "", psnArgs)
   psnArgs <- gsub("\\]", "", psnArgs)
   psnArgs <- gsub("--", "", psnArgs)
@@ -57,10 +57,11 @@ parse_PsN_options <- function(x){
   names(argType) <- argName
   argType[argType == argName] <- ""
   
-  psnArgs <- list(optName = argName, 
-                  optType = argType,
-                  optional = optionalArgs, 
-                  mandatory = mandatoryArgs)
+  psnArgs <- data.frame(name = argName, 
+                  type = argType,
+                  optional = optional, 
+                  mandatory = mandatory,
+                  stringsAsFactors=F)
   return(psnArgs)
 }
 

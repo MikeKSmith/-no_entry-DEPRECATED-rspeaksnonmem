@@ -14,5 +14,5 @@ LazyData: TRUE
 Depends: R (>= 2.6.1)
 Imports: RNMImport
 Suggests: testthat,
-    knitr
+    knitr, dplyr
 VignetteBuilder: knitr
