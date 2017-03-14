@@ -27,35 +27,39 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL,
   psnOptions <- mapply(c, psnCommon, psnOptions)
   
   ## Check psnOpts names
-  validName <- names(psnOpts) %in% psnOptions$optName
+  matchedNames <- sapply(names(psnOpts),function(x)pmatch(x,psnOptions$optName))
+  validName <- !is.na(matchedNames)
   if (!all(validName)) 
     warning(paste(names(psnOpts[!validName]),
-                  "is not a valid PsN argument"))
+                  "is not a valid PsN argument",collapse = "\n"))
   
   psnOpts <- psnOpts[validName]
+  names(psnOpts) <- psnOptions$optName[matchedNames]
   
   quotedStrings <- sapply(psnOpts, is.character)
   psnOpts[quotedStrings] <- shQuote(psnOpts[quotedStrings])
-  checkpsnOpts <- psnOpts[psnOptions$optType[names(psnOpts)] != ""]
-  validCommand <- paste(psnOptions$optType[names(checkpsnOpts)], 
-                        "(", checkpsnOpts, ")", 
-                        sep = "")
-  validArg <- sapply(validCommand, function(x) {
+  psnOptType <- psnOptions$optType[names(psnOpts)]
+  checkOptType <- psnOptType
+  checkOptType[psnOptType==""] <- "is.logical"
+  checkArg <- paste(checkOptType, "(",psnOpts,")",sep="")
+  validArg <- sapply(checkArg, function(x) {
     eval(parse(text = x))
   })
   if (!all(validArg)) 
-    warning(paste(checkpsnOpts[!validArg], 
+    warning(paste(psnOpts[!validArg], 
                   "is not a valid value for the option", 
-                  names(checkpsnOpts[!validArg])))
+                  names(psnOpts[!validArg])))
   
-  checked <- checkpsnOpts[validArg]
-  psnOpts <- psnOpts[!(names(psnOpts) %in% names(checkpsnOpts[!validArg]))]
-  
+  checked <- psnOpts[validArg]
+
   if ( (length(psnOptions$mandatory) > 0) )
     if (!(psnOptions$optName[psnOptions$mandatory] %in% names(psnOpts) ) )
     stop(paste("Mandatory option",psnOptions$optName[psnOptions$mandatory],
                   "is not present in the provided option list"))
+
+  optList <- list(name = names(checked),
+                  value = as.character(checked), 
+                  type = psnOptType[validArg])
   
-  list_to_PsNArgs(psnOpts)
-  
+  list_to_PsNArgs(optList)
 }

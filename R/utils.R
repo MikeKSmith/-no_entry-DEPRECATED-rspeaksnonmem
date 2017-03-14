@@ -21,14 +21,13 @@ Sys.which2 <- function(cmd) {
 
 ## Convert key-value pairs to PsN argument list
 list_to_PsNArgs <- function(x) {
-    quotedStrings <- sapply(x, is.character)
-    x1 <- x
-    x1[quotedStrings] <- shQuote(x1[quotedStrings])
-    x2 <- paste(names(x1), x1, sep = "=")
-    x3 <- gsub("=TRUE", "", x2)
-    x4 <- ifelse(length(grep("=FALSE", x3)) > 0, paste("no-", gsub("=FALSE", "", 
-        x3), sep = ""), x3)
-    x5 <- paste("-", x3, sep = "")
+    x1 <- paste(x$name, x$value, sep = "=")
+    x2 <- gsub("=TRUE", "", x1)
+    x3 <- gsub("=FALSE","", x2)
+    x3[x$type == "is.logical" & x$value == "FALSE"] <- 
+      paste("no-", x$name[x$type == "is.logical" & x$value == FALSE], sep = "")
+    x4 <- x3[!(x$type == "" & x$value == FALSE)]
+    x5 <- paste("-",x4,sep="")
     paste0(x5, collapse = " ")
 }
 

@@ -22,11 +22,8 @@ sumo_PsN <- function(tool = NULL, command = NULL,
                psnOpts)
   }
   
-  if (is.null(command) && is.null(installInfo))
-    stop("command or installInfo argument must be provided")
-  
-  baseCommand <- ifelse(!is.null(command) | !is.null(installInfo), 
-                        defineExecutable(tool = "sumo", installInfo=installInfo), 
+  baseCommand <- ifelse(is.null(command), 
+                        defineExecutable(tool = "sumo", ...), 
                         defineExecutable(command = command))
   
   callPsN(baseCommand = baseCommand, modelFile = lstFile, 
