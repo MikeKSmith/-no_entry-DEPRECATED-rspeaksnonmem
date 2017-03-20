@@ -18,9 +18,14 @@
 #' VPC_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #' @export
 
-VPC_PsN <- function(command = NULL, modelFile = NULL, samples = 100, 
-                    psnOpts = NULL, 
-                    clean = 1, working.dir = NULL, ...) {
+VPC_PsN <- function(command = NULL, 
+                    tool = "sse",
+                    installPath = NULL,
+                    version = NULL,
+                    samples = 100, 
+                    psnOpts = NULL,
+                    clean = 1,  
+                    working.dir = NULL, ...) {
 
   if (!is.null(working.dir)) {
     psnOpts <- c(list(directory = working.dir),
@@ -39,8 +44,12 @@ VPC_PsN <- function(command = NULL, modelFile = NULL, samples = 100,
                         defineExecutable(tool = "VPC", ...), 
                         defineExecutable(command = command))
   
-  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
-          psnOpts = psnOpts)
+  callPsN(command = command,
+          tool = "vpc", 
+          installPath = installPath,
+          version = version,
+          file = modelFile,
+          psnOpts = psnOpts)  
 }
 
 

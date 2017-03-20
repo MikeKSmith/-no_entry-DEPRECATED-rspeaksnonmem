@@ -14,9 +14,15 @@
 #' @examples
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #'
-execute_PsN <- function(tool = NULL, command = NULL, 
-                        modelFile = NULL, psnOpts = NULL, 
-                        clean = 1, working.dir = NULL, ...) {
+execute_PsN <- function(command = NULL, 
+                        tool = "execute",
+                        installPath = NULL,
+                        version = NULL,
+                        modelFile = NULL, 
+                        psnOpts = NULL,
+                        clean = 1, 
+                        working.dir = NULL, ...) {
+
   if (!is.null(working.dir)) {
     psnOpts <- c(list(directory = working.dir),
                  psnOpts)
@@ -27,10 +33,11 @@ execute_PsN <- function(tool = NULL, command = NULL,
                  psnOpts)
   }
   
-  baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "execute", ...),
-                        defineExecutable(command = command))
   
-  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
+  callPsN(command = command,
+          tool = "execute", 
+          installPath = installPath,
+          version = version,
+          file = modelFile,
           psnOpts = psnOpts)
 }

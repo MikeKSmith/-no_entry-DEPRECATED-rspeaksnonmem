@@ -13,10 +13,14 @@
 #' output files should be stored
 #' @return PsN SSE output
 #' @examples
-bootstrap_PsN <- function(tool = NULL, command = NULL, 
+bootstrap_PsN <- function(command = NULL, 
+                          tool = "bootstrap",
+                          installPath = NULL,
+                          version = NULL,
                           modelFile = NULL, 
-                          psnOpts = NULL, clean = 1, working.dir = NULL, 
-                          ...) {
+                          psnOpts = NULL, 
+                          clean = 1, 
+                          working.dir = NULL) {
   
   if (!is.null(working.dir)) {
     psnOpts <- c(list(directory = working.dir),
@@ -28,11 +32,11 @@ bootstrap_PsN <- function(tool = NULL, command = NULL,
                  psnOpts)
   }
   
-  baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "bootstrap", ...), 
-                        defineExecutable(command = command))
-  
-  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
+  callPsN(command = command,
+          tool = "bootstrap", 
+          installPath = installPath,
+          version = version,
+          file = modelFile,
           psnOpts = psnOpts)
   }
 
