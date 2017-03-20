@@ -1,31 +1,38 @@
 #' Use PsN to summarise NONMEM output
 #'
-#' @param tool PsN tool. Must be used in conjunction with installInfo data.frame.
-#' See Vignette "using rspeaksnonmem to run NONMEM and PsN".
-#' @param command PsN command to be executed at the command line
+#' @param command PsN command.
+#' @param tool PsN tool.
+#' @param installPath Installation path for Perl / PsN
+#' @param version Version of PsN
 #' @param lstFile NONMEM output file name
 #' @param psnOpts List of additional PsN command line arguments 
 #' (format: argumentName = value or argumentName=TRUE/FALSE )
 #' @param working.dir Working directory containing control stream and where 
 #' output files should be stored
+#' @details Either specify an explicit command to run at the system prompt 
+#' or specify a combination of tool, installPath and version.
 #' @return PsN sumo output
 #' @examples
 #' execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #' @export
 
-sumo_PsN <- function(tool = NULL, command = NULL, 
-                     lstFile = NULL, psnOpts = NULL, 
-                     working.dir = NULL, ...) {
+sumo_PsN <- function(command = NULL, 
+                     tool = "sumo",
+                     installPath = NULL,
+                     version = NULL,
+                     lstFile = NULL, 
+                     psnOpts = NULL, 
+                     working.dir = NULL) {
   
   if (!is.null(working.dir)) {
   psnOpts <- c(list(directory = working.dir),
                psnOpts)
   }
   
-  baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "sumo", ...), 
-                        defineExecutable(command = command))
-  
-  callPsN(baseCommand = baseCommand, modelFile = lstFile, 
+  callPsN(command = command,
+          tool = "sumo", 
+          installPath = installPath,
+          version = version,
+          file = lstFile,
           psnOpts = psnOpts)
   }

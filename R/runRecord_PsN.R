@@ -13,10 +13,17 @@
 #' @return PsN Run Record output
 #' @examples
 #' 
-runRecord_PsN <- function(tool = NULL, command = NULL, to = NULL, 
-                          runRoot = "Run", modelExtension = ".mod",
-                          outputExtension = ".lst", psnOpts = NULL, 
-                          clean = 1, working.dir = NULL, ...) {
+runRecord_PsN <- function(command = NULL, 
+                          tool = "runrecord",
+                          installPath = NULL,
+                          version = NULL,
+                          to = NULL, 
+                          runRoot = "Run", 
+                          modelExtension = ".mod",
+                          outputExtension = ".lst", 
+                          psnOpts = NULL, 
+                          clean = 1, 
+                          working.dir = NULL) {
   
   if (!is.null(working.dir)) {
     psnOpts <- c(list(directory = working.dir),
@@ -48,7 +55,11 @@ runRecord_PsN <- function(tool = NULL, command = NULL, to = NULL,
                         defineExecutable(tool = "runRecord", ...), 
                         defineExecutable(command = command))
   
-  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
+  callPsN(command = command,
+          tool = "runrecord", 
+          installPath = installPath,
+          version = version,
+          file = modelFile,
           psnOpts = psnOpts)
   
   runRecord <- read.table("AAruninfo.txt", sep = ";", row.names = NULL, skip = 5, 

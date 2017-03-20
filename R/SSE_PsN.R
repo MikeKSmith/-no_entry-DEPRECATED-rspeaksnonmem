@@ -16,10 +16,15 @@
 #' @examples
 #'
 #'## ----SSE:
-SSE_PsN <- function(tool = NULL, command = NULL, 
-                    modelFile = NULL, modelExtension = ".mod", 
-                    samples = 100, psnOpts = NULL, 
-                    working.dir = NULL, clean = 1, ...) {
+SSE_PsN <- function(command = NULL, 
+                    tool = "sse",
+                    installPath = NULL,
+                    version = NULL,
+                    modelFile = NULL, 
+                    samples = 100, 
+                    psnOpts = NULL, 
+                    clean = 1, 
+                    working.dir = NULL) {
   
   if (!is.null(working.dir)) {
     psnOpts <- c(list(directory = working.dir),
@@ -33,11 +38,11 @@ SSE_PsN <- function(tool = NULL, command = NULL,
   
   psnOpts <- c(list(samples = samples),
                psnOpts)
-  
-  baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "SSE", ...), 
-                        defineExecutable(command = command))
-  
-  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
-          psnOpts = psnOpts)
+
+  callPsN(command = command,
+          tool = "sse", 
+          installPath = installPath,
+          version = version,
+          file = modelFile,
+          psnOpts = psnOpts)  
 }
