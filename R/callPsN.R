@@ -22,7 +22,7 @@ callPsN <- function(command = NULL,
     if (is.null(version)) stop("Please specify a version of PsN")   
   }
 
-  if (file.exists(modelFile)) stop(paste("File",modelFile,"cannot be found"))
+  if (!file.exists(file)) stop(paste("File",file,"cannot be found"))
     
   psnOptsText <- ifelse(!is.null(psnOpts), 
                         validate_PsN_options(tool = tool,
@@ -32,13 +32,13 @@ callPsN <- function(command = NULL,
                         "")
   
   baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "execute",
+                        defineExecutable(tool = tool,
                                          installPath = installPath,
                                          version = version),
                         defineExecutable(command = command))
   
   command <- paste(baseCommand, " ", 
-                   shQuote(modelFile), 
+                   shQuote(file), 
                    psnOptsText)
   
   cat(paste(command, "\n"))

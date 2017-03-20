@@ -19,11 +19,12 @@
 #' @export
 
 VPC_PsN <- function(command = NULL, 
-                    tool = "sse",
+                    tool = "vpc",
                     installPath = NULL,
                     version = NULL,
                     samples = 100, 
                     psnOpts = NULL,
+                    modelFile = NULL,
                     clean = 1,  
                     working.dir = NULL, ...) {
 
@@ -41,7 +42,9 @@ VPC_PsN <- function(command = NULL,
                psnOpts)
   
   baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "VPC", ...), 
+                        defineExecutable(tool = "vpc",
+                                         installPath = installPath,
+                                         version = version), 
                         defineExecutable(command = command))
   
   callPsN(command = command,

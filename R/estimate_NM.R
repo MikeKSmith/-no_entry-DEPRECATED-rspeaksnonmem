@@ -15,13 +15,20 @@
 #' estimate.NM(modelFile='warfarin_PK_CONC_MKS', modelExtension='.ctl', 
 #' working.dir='./data')
 
-estimate_NM <- function(command = NULL, modelFile = NULL, 
-                        lstFile = NULL, lstFileExtension = "lst", 
+estimate_NM <- function(command = NULL, 
+                        tool = NULL,
+                        installPath = NULL,
+                        version = NULL,
+                        modelFile = NULL, 
+                        lstFile = NULL, 
+                        lstFileExtension = "lst", 
                         clean = 1, ...) {
     
     baseCommand <- ifelse(is.null(command), 
-                          defineExecutable(tool = "nonmem", ...), 
-                          defineExecutable(command = command, ...))
+                          defineExecutable(tool = "nonmem",
+                                           installPath = installPath,
+                                           version = version), 
+                          defineExecutable(command = command))
     lstFile <- ifelse(is.null(lstFile), 
                       paste(tools::file_path_sans_ext(modelFile), 
                             sub("\\.", "", lstFileExtension), sep = "."), 
