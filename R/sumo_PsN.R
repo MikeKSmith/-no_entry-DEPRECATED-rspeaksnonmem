@@ -13,7 +13,7 @@
 #' or specify a combination of tool, installPath and version.
 #' @return PsN sumo output
 #' @examples
-#' execute_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
+#' sumo_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #' @export
 
 sumo_PsN <- function(command = NULL, 

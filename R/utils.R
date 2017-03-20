@@ -71,7 +71,7 @@ execute <- function(command,minimized = FALSE, invisible = TRUE) {
     if (win()) 
         args <- c(args, list(minimized = minimized, invisible = invisible))
     # cat(command, file=file.path(rdir,glue(run,'.cat')),sep='\n',append=TRUE)
-    result <- tryCatch(do.call(system2, args), error = function(e) warning(e$message, 
+    result <- tryCatch(do.call(system, args), error = function(e) warning(e$message, 
         call. = FALSE, immediate. = TRUE))
     # if (is.integer(result)) result <- paste('Run',run,'has exit code',result)
     # cat(result,file=file.path(rdir,glue(run,'.cat')),sep='\n',append=TRUE)
