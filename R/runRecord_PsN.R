@@ -1,5 +1,10 @@
 #' Uses PsN RunRecord function to create a Run Record
 #'
+#' @param command Explicit PsN command to be run at shell/DOS prompt.
+#' @param tool PsN tool name. To be used in conjunction with \code{"installPath"}
+#'  and \code{"version"}. Defaults to "runrecord".
+#' @param installPath Installation path for Perl / PsN. e.g. "c:/strawberry/perl"
+#' @param version Version of PsN as a character string. e.g. "4.6.0"
 #' @param to Run numbers to include in the Run Record.
 #' @param runRoot Root for Run control and output files e.g. Run1.mod, Run1.lst 
 #' would have runRoot='Run'
@@ -7,11 +12,13 @@
 #' Default is '.mod'.
 #' @param outputExtension Extension for NONMEM output files. Default is '.lst'.
 #' @param psnOpts Additional arguments for PsN runrecord function.
-#' @param cleanup Clean up directory once processing is finished?. Default TRUE.
+#' @param clean Clean up working directory following completion. PsN option.
+#' Default = 1.
 #' @param working.dir Working directory containing control streams and where 
 #' output files should be stored
 #' @return PsN Run Record output
 #' @examples
+#' @export
 #' 
 runRecord_PsN <- function(command = NULL, 
                           tool = "runrecord",

@@ -13,6 +13,7 @@
 #' Default FALSE.
 #' @return NONMEM estimation output files
 #' @examples
+#' @export
 
 updateModel <- function(parsedObject, problem = parsedObject$Problem, 
                         theta = parsedObject$Theta, omega = parsedObject$Omega, 
