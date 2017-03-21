@@ -25,7 +25,7 @@ estimate_NM <- function(command = NULL,
                         clean = 1, ...) {
     
     baseCommand <- ifelse(is.null(command), 
-                          defineExecutable(tool = "nonmem",
+                          defineExecutable(tool = tool,
                                            installPath = installPath,
                                            version = version), 
                           defineExecutable(command = command))
