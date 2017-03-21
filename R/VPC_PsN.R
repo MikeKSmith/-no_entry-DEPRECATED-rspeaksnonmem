@@ -1,19 +1,20 @@
 #' Performs VPC of a model using PsN VPC
 #'
-#' @param tool PsN tool. Must be used in conjunction with installInfo data.frame.
-#' See Vignette "using rspeaksnonmem to run NONMEM and PsN".
-#' @param command PsN command to be executed at the command line
-#' @param modelFile NONMEM control stream file name (without extension)
-#' @param modelExtension NONMEM control stream file extension. Defaults to 
-#' '.mod'
-#' @param samples Number of samples for VPC. Mandatory option for PsN VPC. 
+#' @param command Explicit PsN command to be run at shell/DOS prompt.
+#' @param tool PsN tool name. To be used in conjunction with \code{"installPath"}
+#'  and \code{"version"}. Defaults to "vpc".
+#' @param installPath Installation path for Perl / PsN. e.g. "c:/strawberry/perl"
+#' @param version Version of PsN as a character string. e.g. "4.6.0"
+#' @param samples Number of samples for VPC. Mandatory option for PsN VPC.
+#' Default = 100.
 #' @param psnOpts List of additional PsN command line options 
 #' (format: optionName = value or optionName=TRUE/FALSE )
-#' @param working.dir Working directory containing control stream and where 
-#' output files should be stored
+#' @param modelFile NONMEM control stream file name (without extension)
 #' @param clean Whether to clean up additional NONMEM files and folders 
 #' following estimation.  PsN option. Default = 1.
-#' @return NONMEM estimation output files
+#' @param working.dir Working directory containing control stream and where 
+#' output files should be stored
+#' @return VPC output files
 #' @examples
 #' VPC_PsN(modelFile='warfarin_PK_CONC_MKS.ctl', working.dir='./data')
 #' @export

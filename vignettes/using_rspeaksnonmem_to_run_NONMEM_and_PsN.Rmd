@@ -32,14 +32,20 @@ the data, parameter values, and task information separately from the model.
 Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be installed. This package is not on CRAN but is available on R-Forge. You can install from there using:
 
 ```{r install_RNMImport, include=F}
-  #devtools::install_github("MikeKSmith/RNMImport")
+  devtools::install_github("MikeKSmith/RNMImport")
 ```
 
 ### Install rspeaksnonmem
 Eventually, `rspeaksnonmem` will be released to CRAN, but while still in development `rspeaksnonmem` can most easily be installed from GitHub using the `devtools` package:
 
 ```{r install_rspeaksnonmem, include=F}
-    #devtools::install_github("MikeKSmith/rspeaksnonmem")
+  devtools::install_github("MikeKSmith/rspeaksnonmem")
+```
+
+
+```{r,echo=FALSE,results='hide',message=FALSE}
+ devtools::load_all(pkg=".")
+ devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
 ```
 
 ## Setup 
@@ -52,23 +58,10 @@ for running the tool at the system prompt. On Linux systems the "path" informati
 blank.
 
 ```{r setExecutables}
-perlPath <- "c:/perl516"
-PsNVersion <- "3.5.4"
-NONMEMcommand <- "nmfe72"
-
-tools <- c("NONMEM", "execute", "VPC", "bootstrap", "SSE", "runrecord", "sumo")
-installPaths <- c("c:/nm72", rep(perlPath,length(tools)-1))
-commands <- sapply(tools, function(x) ifelse( x == "NONMEM", NONMEMcommand, paste( casefold(x,upper = FALSE), PsNVersion, sep = "-" ) ) )
-
-installedSoftware <- data.frame( cbind( tool = tools, path = installPaths, command = commands ), 
-                                 row.names=NULL, stringsAsFactors = F)
-installedSoftware
-```
-
-
-```{r,echo=FALSE,results='hide',message=FALSE}
- devtools::load_all(pkg=".")
- devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
+perlPath <- "c:/strawberry/perl"
+PsNVersion <- "4.6.0"
+nmPath <- "c:/nm72"
+nmVerion <- "7.2"
 ```
 
 Load the `rspeaksnonmem` package
@@ -93,11 +86,12 @@ for each tool (shown above) which is used to create the command for the system p
 ancillary files from the working directory.
 
 ```{r NONMEM }
-estimate_NM(modelFile = "theophylline.mod", installInfo = installedSoftware)
+estimate_NM(modelFile = "theophylline.mod", command="c:/nm72/run/nmfe72.bat")
 ```
 ## Returning results from NONMEM output 
 ```{r Sumo}
-sumo_PsN(lstFile = "theophylline.lst", installInfo = installedSoftware)
+getwd()
+sumo_PsN(lstFile = "theophylline.lst", installPath = perlPath, version=PsNVersion)
 ```
 
 We can also use RNMImport to read the NONMEM output:
@@ -151,12 +145,12 @@ The `defineExecutable` function used by ```estimate_NM``` and PsN calling functi
 to find valid executables at the system prompt:
 
 ```{r defineExecutable_with_command }
-defineExecutable(command = "execute-3.5.4")
+defineExecutable(command = "R", searchCommand = T)
 ```
 
 or it can search for suitable executables in a specified path:
 ```{r defineExecutable2}
-defineExecutable(command = "nmfe72", installPath = "c:/nm72/", searchCommand = T)
+defineExecutable(tool = "nonmem", installPath = nmPath, searchCommand = T)
 ```
 
 The PsN functions work in an analogous way. Here we use ```execute_PsN``` to run estimation, but using PsN's additional 
@@ -164,17 +158,21 @@ functionality for restarting, tweaking initial estimates etc. Additional argumen
 ```addargs``` argument to the function:
 
 ```{r executePsN}
-execute_PsN(modelFile='theophylline.mod', command="execute-3.5.4", 
+execute_PsN(modelFile='theophylline.mod',
+            installPath = perlPath,
+            version = PsNVersion,
             psnOpts=list(tweak_inits=TRUE, retries=3))
 ```
 ## VPC 
 Next we can perform VPC using PsN:
 ```{r VPC_PsN}
-VPC_PsN( modelFile='theophylline.mod', installInfo=installedSoftware,
-         working.dir="Run1_VPC", 
-         samples=100, seed="54321",
-         psnOpts=list(lst="theophylline.lst", bin_by_count=0,
-                      bin_array="0.125,0.375,0.75,1.5,2.5,5,6,8,10,16,48"))
+VPC_PsN( modelFile='theophylline.mod', 
+         installPath = perlPath,
+         version = PsNVersion,
+         working.dir='Run1_VPC', 
+         samples=100, seed='54321',
+         psnOpts=list(lst='theophylline.lst', bin_by_count=0,
+                      bin_array='0.125,0.375,0.75,1.5,2.5,5,6,8,10,16,48'))
 ```
 
 and then use the Xpose function xpose_vpc to plot the result:
@@ -186,8 +184,12 @@ vpcinfo <- file.path(vpcdir,"vpc_results.csv")
 
 xpose4::xpose.VPC(vpc.info=vpcinfo,	vpctab=vpctab)
 ```
-## Bootstrap 
-```{r bootstrap_PsN, include=FALSE}
-# bootstrap_PsN(modelFile='theophylline.mod', installInfo=installedSoftware, 
-#              nsamp=20, seed=54321, working.dir="Run1_bootstrap")
+## Other PsN functionality
+Although functions have been provided as wrappers to the PsN functions, it is 
+easy to extend these to any other PsN function using the function callPsN.
+```{r other_PsN}
+  callPsN(tool = "linearize", 
+          installPath = perlPath,
+          version = PsNVersion,
+          file = "theophylline.mod")
 ```

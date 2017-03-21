@@ -1,9 +1,10 @@
 #' Use PsN to summarise NONMEM output
 #'
-#' @param command PsN command.
-#' @param tool PsN tool.
-#' @param installPath Installation path for Perl / PsN
-#' @param version Version of PsN
+#' @param command Explicit PsN command to be run at shell/DOS prompt.
+#' @param tool PsN tool name. To be used in conjunction with \code{"installPath"}
+#'  and \code{"version"}. Defaults to "sumo".
+#' @param installPath Installation path for Perl / PsN. e.g. "c:/strawberry/perl"
+#' @param version Version of PsN as a character string. e.g. "4.6.0"
 #' @param lstFile NONMEM output file name
 #' @param psnOpts List of additional PsN command line arguments 
 #' (format: argumentName = value or argumentName=TRUE/FALSE )
