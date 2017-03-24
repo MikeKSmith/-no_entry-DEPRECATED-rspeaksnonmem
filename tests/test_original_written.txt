@@ -1,0 +1,1024 @@
+
+ 1 File: c:/nm72/examples/sde10.ctl 
+Problem: PK ODE HANDS ON ONE
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Model : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 2 File: c:/nm72/examples/sde6.ctl 
+Problem: PK ODE HANDS ON ONE
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Model : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 3 File: c:/nm72/examples/sde7.ctl 
+Problem: PK ODE HANDS ON ONE
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Model : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 4 File: c:/nm72/examples/sde8.ctl 
+Problem: PK ODE HANDS ON ONE
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Model : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 5 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/control3.con 
+Problem: THEOPHYLLINE SINGLE SUBJECT DATA
+	 Theta : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File    IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "DATA3" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+
+test:$Data
+     File      IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'DATA3'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: FAIL
+
+ 6 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/control4.con 
+Problem: THEOPHYLLINE POPULATION DATA
+	 Theta : PASS
+	 Omega : FAIL
+
+ref:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+      [,1]  [,2]  [,3]
+[1,] 6.000 5e-03 0.300
+[2,] 0.005 2e-04 0.006
+[3,] 0.300 6e-03 0.400
+
+$Omega[[1]]$block
+[1] 3
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+character(0)
+
+
+$Omega$initialMatrix
+       OMEGA1 OMEGA2 OMEGA3
+OMEGA1  6.000  5e-03  0.300
+OMEGA2  0.005  2e-04  0.006
+OMEGA3  0.300  6e-03  0.400
+
+
+
+test:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+      [,1]  [,2]  [,3]
+[1,] 6.000 5e-03 0.300
+[2,] 0.005 2e-04 0.006
+[3,] 0.300 6e-03 0.400
+
+$Omega[[1]]$block
+[1] 3
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] "1" "2" "3"
+
+
+$Omega$initialMatrix
+       OMEGA1 OMEGA2 OMEGA3
+OMEGA1  6.000  5e-03  0.300
+OMEGA2  0.005  2e-04  0.006
+OMEGA3  0.300  6e-03  0.400
+
+
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File   IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "THEO" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+
+test:$Data
+     File     IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'THEO'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 PRED : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: FAIL
+
+ 7 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/phenobarb.con 
+Problem: PHENOBARB SIMPLE MODEL
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File    IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "PHENO" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+
+test:$Data
+     File      IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'PHENO'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: FAIL
+
+ 8 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/simexampl.ctl 
+Problem: Simulation of population data w/ covariates
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+All sections identical: PASS
+
+ 9 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/subprob1.mod 
+Problem: COMPUTE PERCENTAGE OF POP. WITH CP>5 AT DOSE=200, TIME=5
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File    IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "dataB" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+
+test:$Data
+     File      IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'dataB'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 Sim : PASS
+	 PRED : PASS
+Problem: SIMULATION
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File    IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "dataA" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+
+test:$Data
+     File      IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'dataA'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 Sim : PASS
+Problem: ESTIMATION
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File         IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format  
+[1,] "simulation" "NONE" ""     "FALSE" "500"   ""        ""   "4E12.0"
+
+
+test:$Data
+     File           IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'simulation'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 Estimates : PASS
+Problem: ESTIMATE PERCENTAGE OF POP. WITH CP>5 AT DOSE=200, TIME=5
+	 Problem : PASS
+	 Input : PASS
+	 Data : FAIL
+
+ref:$Data
+     File    IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "dataB" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+
+test:$Data
+     File      IG     ACCEPT REWIND  RECORDS TRANSLATE NULL format
+[1,] "'dataB'" "NONE" ""     "FALSE" ""      ""        ""   ""    
+
+	 Sim : PASS
+All sections identical: FAIL
+
+ 10 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/TestDataNM7/TestData1.ctl 
+Problem: NM7 test 1
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 11 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/TestDataNM7/TestData1_missingtab.ctl 
+Problem: NM7 test 1
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 12 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/TestNoSigMaxeval0/Test.ctl 
+Problem: System Test 1
+	 Theta : PASS
+	 Omega : PASS
+	 Problem : PASS
+	 Input : PASS
+	 Data : PASS
+	 PRED : PASS
+	 Estimates : PASS
+All sections identical: PASS
+
+ 13 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/TestSimRun/TestData1SIM.con 
+Problem: System Test 2
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+All sections identical: PASS
+
+ 14 File: C:/Users/smith_mk/Documents/Working documents/RNMImport/inst/unittests/testdata/TestSimRun/TestData1SIM_missingtab.con 
+Problem: System Test 2
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+All sections identical: PASS
+
+ 15 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/ctl/1001.ctl 
+Problem: 1001 phase1 1CMT
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 16 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/ctl/1002.ctl 
+Problem: 1002 phase1 2 CMT
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 17 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/ctl/1003.ctl 
+Problem: 1003 phase1 2 CMT like 1002 but no eta on Q/v3 and no + err
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 18 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/ctl/1004.ctl 
+Problem: 1004 phase1 2 CMT like 1003 but better bounds
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 19 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/ctl/1105.ctl 
+Problem: 1105 phase1 2 CMT like 1004 but diff. initial on V3
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 20 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/1.ctl 
+Problem: 1 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 21 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/10.ctl 
+Problem: 10 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 22 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/2.ctl 
+Problem: 2 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 23 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/3.ctl 
+Problem: 3 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 24 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/4.ctl 
+Problem: 4 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 25 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/5.ctl 
+Problem: 5 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 26 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/6.ctl 
+Problem: 6 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 27 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/7.ctl 
+Problem: 7 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 28 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/8.ctl 
+Problem: 8 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 29 File: C:/R/R-3.3.2/library/metrumrg/example/project/nonmem/sim/9.ctl 
+Problem: 9 phase1 2 CMT like 1004 but diff. initial on V3
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 Sim : PASS
+	 PK : PASS
+	 Error : PASS
+All sections identical: PASS
+
+ 30 File: C:\Users\smith_mk\Documents\Working documents\rspeaksnonmem\inst\exdata/moxonidine.mod 
+Problem: run1.mod run1.ctl MOXONIDINE PK ANALYSIS
+	 Theta : PASS
+	 Omega : FAIL
+
+ref:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+       [,1]   [,2]
+[1,] 0.0489 0.0256
+[2,] 0.0256 0.0156
+
+$Omega[[1]]$block
+[1] 2
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] "1"   "1-2" "2"  
+
+
+$Omega[[2]]
+$Omega[[2]]$values
+     [,1]
+[1,] 1.98
+
+$Omega[[2]]$block
+[1] 1
+
+$Omega[[2]]$FIX
+[1] FALSE
+
+$Omega[[2]]$SAME
+[1] FALSE
+
+$Omega[[2]]$comments
+[1] "3"
+
+
+$Omega[[3]]
+$Omega[[3]]$values
+      [,1]
+[1,] 0.013
+
+$Omega[[3]]$block
+[1] 1
+
+$Omega[[3]]$FIX
+[1] FALSE
+
+$Omega[[3]]$SAME
+[1] FALSE
+
+$Omega[[3]]$comments
+[1] "4"
+
+
+$Omega[[4]]
+$Omega[[4]]$values
+NULL
+
+$Omega[[4]]$block
+[1] 1
+
+$Omega[[4]]$FIX
+[1] FALSE
+
+$Omega[[4]]$SAME
+[1] TRUE
+
+$Omega[[4]]$comments
+[1] "5"
+
+
+$Omega[[5]]
+$Omega[[5]]$values
+       [,1]
+[1,] 0.0481
+
+$Omega[[5]]$block
+[1] 1
+
+$Omega[[5]]$FIX
+[1] FALSE
+
+$Omega[[5]]$SAME
+[1] FALSE
+
+$Omega[[5]]$comments
+[1] "6"
+
+
+$Omega[[6]]
+$Omega[[6]]$values
+NULL
+
+$Omega[[6]]$block
+[1] 1
+
+$Omega[[6]]$FIX
+[1] FALSE
+
+$Omega[[6]]$SAME
+[1] TRUE
+
+$Omega[[6]]$comments
+[1] "7" "8"
+
+
+$Omega$initialMatrix
+       OMEGA1 OMEGA2 OMEGA3 OMEGA4 OMEGA5 OMEGA6 OMEGA7
+OMEGA1 0.0489 0.0256   0.00  0.000  0.000 0.0000 0.0000
+OMEGA2 0.0256 0.0156   0.00  0.000  0.000 0.0000 0.0000
+OMEGA3 0.0000 0.0000   1.98  0.000  0.000 0.0000 0.0000
+OMEGA4 0.0000 0.0000   0.00  0.013  0.000 0.0000 0.0000
+OMEGA5 0.0000 0.0000   0.00  0.000  0.013 0.0000 0.0000
+OMEGA6 0.0000 0.0000   0.00  0.000  0.000 0.0481 0.0000
+OMEGA7 0.0000 0.0000   0.00  0.000  0.000 0.0000 0.0481
+
+
+
+test:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+       [,1]   [,2]
+[1,] 0.0489 0.0256
+[2,] 0.0256 0.0156
+
+$Omega[[1]]$block
+[1] 2
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] "1" "2"
+
+
+$Omega[[2]]
+$Omega[[2]]$values
+     [,1]
+[1,] 1.98
+
+$Omega[[2]]$block
+[1] 1
+
+$Omega[[2]]$FIX
+[1] FALSE
+
+$Omega[[2]]$SAME
+[1] FALSE
+
+$Omega[[2]]$comments
+[1] "1"
+
+
+$Omega[[3]]
+$Omega[[3]]$values
+      [,1]
+[1,] 0.013
+
+$Omega[[3]]$block
+[1] 1
+
+$Omega[[3]]$FIX
+[1] FALSE
+
+$Omega[[3]]$SAME
+[1] FALSE
+
+$Omega[[3]]$comments
+[1] "1"
+
+
+$Omega[[4]]
+$Omega[[4]]$block
+[1] 1
+
+$Omega[[4]]$FIX
+[1] FALSE
+
+$Omega[[4]]$SAME
+[1] TRUE
+
+$Omega[[4]]$comments
+character(0)
+
+
+$Omega[[5]]
+$Omega[[5]]$values
+       [,1]
+[1,] 0.0481
+
+$Omega[[5]]$block
+[1] 1
+
+$Omega[[5]]$FIX
+[1] FALSE
+
+$Omega[[5]]$SAME
+[1] FALSE
+
+$Omega[[5]]$comments
+[1] "1"
+
+
+$Omega[[6]]
+$Omega[[6]]$block
+[1] 1
+
+$Omega[[6]]$FIX
+[1] FALSE
+
+$Omega[[6]]$SAME
+[1] TRUE
+
+$Omega[[6]]$comments
+character(0)
+
+
+$Omega$initialMatrix
+       OMEGA1 OMEGA2 OMEGA3 OMEGA4 OMEGA5 OMEGA6 OMEGA7
+OMEGA1 0.0489 0.0256   0.00  0.000  0.000 0.0000 0.0000
+OMEGA2 0.0256 0.0156   0.00  0.000  0.000 0.0000 0.0000
+OMEGA3 0.0000 0.0000   1.98  0.000  0.000 0.0000 0.0000
+OMEGA4 0.0000 0.0000   0.00  0.013  0.000 0.0000 0.0000
+OMEGA5 0.0000 0.0000   0.00  0.000  0.013 0.0000 0.0000
+OMEGA6 0.0000 0.0000   0.00  0.000  0.000 0.0481 0.0000
+OMEGA7 0.0000 0.0000   0.00  0.000  0.000 0.0000 0.0481
+
+
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+All sections identical: FAIL
+
+ 31 File: C:\Users\smith_mk\Documents\Working documents\rspeaksnonmem\inst\exdata/Theophylline.mod 
+Problem: Analysis of 1 compartment oral model for theophyline data
+	 Theta : PASS
+	 Omega : PASS
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: PASS
+
+ 32 File: C:\Users\smith_mk\Documents\Working documents\rspeaksnonmem\inst\exdata/warfarin.ctl 
+Problem: WARFARIN PK
+	 Theta : PASS
+	 Omega : FAIL
+
+ref:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+       PPV_CL PPV_V
+PPV_CL   0.10  0.01
+PPV_V    0.01  0.10
+
+$Omega[[1]]$block
+[1] 2
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] ""       "PPV_CL" "PPV_V" 
+
+
+$Omega[[2]]
+         values   FIX comments
+PPV_KA      0.1 FALSE   PPV_KA
+PPV_TLAG    0.0  TRUE PPV_TLAG
+
+$Omega$initialMatrix
+         PPV_CL PPV_V PPV_KA PPV_TLAG
+PPV_CL     0.10  0.01    0.0        0
+PPV_V      0.01  0.10    0.0        0
+PPV_KA     0.00  0.00    0.1        0
+PPV_TLAG   0.00  0.00    0.0        0
+
+
+
+test:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+       PPV_CL PPV_V
+PPV_CL   0.10  0.01
+PPV_V    0.01  0.10
+
+$Omega[[1]]$block
+[1] 2
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] "PPV_CL" "PPV_V" 
+
+
+$Omega[[2]]
+         values   FIX comments
+PPV_KA      0.1 FALSE   PPV_KA
+PPV_TLAG    0.0  TRUE PPV_TLAG
+
+$Omega$initialMatrix
+         PPV_CL PPV_V PPV_KA PPV_TLAG
+PPV_CL     0.10  0.01    0.0        0
+PPV_V      0.01  0.10    0.0        0
+PPV_KA     0.00  0.00    0.1        0
+PPV_TLAG   0.00  0.00    0.0        0
+
+
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: FAIL
+
+ 33 File: C:\Users\smith_mk\Documents\Working documents\rspeaksnonmem\inst\exdata/warfarin_boot.ctl 
+Problem: WARFARIN PK
+	 Theta : PASS
+	 Omega : FAIL
+
+ref:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+       PPV_CL PPV_V
+PPV_CL   0.10  0.01
+PPV_V    0.01  0.10
+
+$Omega[[1]]$block
+[1] 2
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] ""       "PPV_CL" "PPV_V" 
+
+
+$Omega[[2]]
+         values   FIX comments
+PPV_KA      0.1 FALSE   PPV_KA
+PPV_TLAG    0.0  TRUE PPV_TLAG
+
+$Omega$initialMatrix
+         PPV_CL PPV_V PPV_KA PPV_TLAG
+PPV_CL     0.10  0.01    0.0        0
+PPV_V      0.01  0.10    0.0        0
+PPV_KA     0.00  0.00    0.1        0
+PPV_TLAG   0.00  0.00    0.0        0
+
+
+
+test:$Omega
+$Omega[[1]]
+$Omega[[1]]$values
+       PPV_CL PPV_V
+PPV_CL   0.10  0.01
+PPV_V    0.01  0.10
+
+$Omega[[1]]$block
+[1] 2
+
+$Omega[[1]]$FIX
+[1] FALSE
+
+$Omega[[1]]$SAME
+[1] FALSE
+
+$Omega[[1]]$comments
+[1] "PPV_CL" "PPV_V" 
+
+
+$Omega[[2]]
+         values   FIX comments
+PPV_KA      0.1 FALSE   PPV_KA
+PPV_TLAG    0.0  TRUE PPV_TLAG
+
+$Omega$initialMatrix
+         PPV_CL PPV_V PPV_KA PPV_TLAG
+PPV_CL     0.10  0.01    0.0        0
+PPV_V      0.01  0.10    0.0        0
+PPV_KA     0.00  0.00    0.1        0
+PPV_TLAG   0.00  0.00    0.0        0
+
+
+	 Sigma : PASS
+	 Problem : PASS
+	 Tables : PASS
+	 Subroutine : PASS
+	 Input : PASS
+	 Data : PASS
+	 PK : PASS
+	 Error : PASS
+	 Estimates : PASS
+	 Cov : PASS
+All sections identical: FAIL
