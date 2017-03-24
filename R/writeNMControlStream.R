@@ -21,9 +21,17 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
   ### Identify position of model elements in template compared to 
   ### RNMImport sequence
   raw <- templateModel
+  
+  ### Check whether parsedControl is a list of problemContents 
+  ### or a single problem. For now, we check looking at names.
+  ### If no names then assume this is a list of problemContents
+  ### and encapsulate parsedControl in a list.
+  if (!is.null(names(parsedControl))) parsedControl <- list(parsedControl)
+  
   problems <- lapply(parsedControl, function(x) x$Problem)
-  probLines <- sapply(problems, function(x) match(x, sub("^\\$\\w* ", "", raw,
-                                                         perl = T)))
+  probLines <- sapply(problems, function(x){
+    match(x, sub("^\\$\\w* ", "", raw,perl = T))
+  })
   
   ### Handling >1 Problem Match raw Problem statement with 
   ### parsed Problem statement
@@ -150,9 +158,11 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
         }
       }
       
-      Theta.txt <- ifelse(!is.na(control2$Theta[, "comments"]),
-                          paste(Theta.txt, ";", control2$Theta[, "comments"]),
-                          Theta.txt)
+      if (!is.null(control2$Theta$comments)) {
+        Theta.txt <- ifelse(!is.na(control2$Theta[, "comments"]),
+                            paste(Theta.txt, ";", control2$Theta[, "comments"]),
+                            Theta.txt)
+      }
       thetaBlockName <- ifelse(length(grep("Theta", ctrlmerged$RNMI.block)) > 0, 
                                ctrlmerged$orig.block[grep("Theta", ctrlmerged$RNMI.block)],
                                "")
@@ -175,8 +185,8 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
           ## Print BLOCK(n) If SAME then don't print values just text
           x$block <- paste(
             paste("$OMEGA BLOCK(", x$block, ")", sep = ""), 
-            if (x$SAME) "SAME")
-          if (!x$SAME) {
+            if (!is.null(x$SAME) && x$SAME) "SAME")
+          if (is.null(x$SAME) | !x$SAME) {
             x$values[upper.tri(x$values)] <- ""
             x$values <- as.data.frame(x$values)
             x$values <- paste(
@@ -194,8 +204,11 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
         } else {
           y <- data.frame(x)
           y$FIX <- ifelse(x$FIX, "FIX", "")
-          y$comments <- ifelse(!is.na(x$comments), paste(";", x$comments), 
-                               "")
+          if (!is.null(x$comments)){
+            y$comments <- ifelse(!is.na(x$comments), 
+                                 paste(";", x$comments), 
+                                 "")
+          }
           out <- apply(y, 1, paste, collapse = " ")
           omegaBlockName <- ifelse(length(grep("Omega", ctrlmerged$RNMI.block)) > 
                                      0, ctrlmerged$orig.block[grep("Omega", ctrlmerged$RNMI.block)], 
@@ -225,7 +238,7 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
           x$block <- paste(paste("$SIGMA BLOCK(", x$block, ")", sep = ""), 
                            if (x$SAME) 
                              "SAME", "\n")
-          if (!x$SAME) {
+          if (is.null(x$SAME) | !x$SAME) {
             x$values[upper.tri(x$values)] <- ""
             x$values <- as.data.frame(x$values)
             x$values <- ifelse(!x$SAME, paste(apply(x$values, 1, paste, collapse = " "), 
@@ -240,8 +253,11 @@ writeNMControlStream <- function(templateModel, parsedControl, outputFile,
         } else {
           y <- data.frame(x)
           y$FIX <- ifelse(x$FIX, "FIX", "")
-          y$comments <- ifelse(!is.na(y$comments), paste(";", y$comments), 
-                               "")
+          if (!is.null(x$comments)) {
+            y$comments <- ifelse(!is.na(y$comments), 
+                                 paste(";", y$comments), 
+                                 "")
+          }
           out <- apply(y, 1, paste, collapse = " ")
           sigmaBlockName <- ifelse(length(grep("Sigma", ctrlmerged$RNMI.block)) > 
                                      0, ctrlmerged$orig.block[grep("Sigma", ctrlmerged$RNMI.block)], 
