@@ -2,22 +2,18 @@
 title: "Using rspeaksnonmem to modify NONMEM control streams"
 author: "Mike K Smith (Mike.K.Smith@Pfizer.com)"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+# output: rmarkdown::html_vignette
+# vignette: >
+#   %\VignetteIndexEntry{Vignette Title}
+#   %\VignetteEngine{knitr::rmarkdown}
+#   %\VignetteEncoding{UTF-8}
+output: html_notebook
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 `rspeaksnonmem` is designed to allow the user to craft workflows based on a 
 given NONMEM model.
 
 For more information on how to use `rspeaksnonmem` to run NONMEM and PsN please 
-review the vignette "Using rspeaksnonmem to run NONMEM and PsN".
+review the vignette "Introduction to `rspeaksnonmem`".
 
 After importing and parsing a control stream to an R object using the 
 `RNMImport` package, `rspeaksnonmem` allows the user to easily change initial 
@@ -33,7 +29,7 @@ original file.
 
 ### Dependencies 
 
-`rspeaksnonmem` relies on the package [`RNMImport`](https://github.com/MangoTheCat/RNMImport) 
+`rspeaksnonmem` relies on the package [`RNMImport`](https://github.com/MikeKSmith/RNMImport) 
 function `importNmMod` which reads and parses the NONMEM control stream. 
 `rspeaksnonmem` then works with the data, parameter values, and task information
 separately from the model.
@@ -44,7 +40,6 @@ includes handling of OMEGA and SIGMA blocks and identifying which elements are
 fixed for these parameters.
 
 ```{r install_RNMImport, eval = FALSE}
-  #devtools::install_git("MangoTheCat/RNMImport")
   #devtools::install_git("MikeKSmith/RNMImport")
 ```
 
@@ -160,16 +155,16 @@ newWarfModel
 ```
 
 Note how the THETA settings for POP_TLAG have been updated, but all other 
-elements are unchanged. It is also possible to change the initial estimates 
+elements are unchanged. 
+
+It is also possible to change the initial estimates 
 while retaining the specified lower and upper bounds:
 
 ```{r}
-newThetas <- warfTemplateModel$Theta
+newTheta2 <- warfTemplateModel$Theta
 newInits <- c(0.25, 10, 4, 0.25, 0, 0.1)
-newThetas[,"Est"] <- newInits
-
-newModel <- updateModel(parsedObject = warfTemplateModel, theta=newThetas, runno=1)
-newModel
+newTheta2[,"Est"] <- newInits
+newTheta2
 ```
 
 We can finally write out the updated control stream using the function 
@@ -180,7 +175,7 @@ updated files, which allows easier checking of changes.
 
 ```{r writeNMControlStream}
 writeNMControlStream(templateModel = warfModel$Raw, 
-                     parsedControl = list(newModel), 
+                     parsedControl = list(newWarfModel), 
                      outputFile = "warfarin2", 
                      outFileExtension = "ctl")
 cat(readLines("warfarin2.ctl", warn = F), sep="\n")

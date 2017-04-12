@@ -2,321 +2,128 @@
 title: "Introduction to rspeaksnonmem"
 author: "Mike K Smith (Mike.K.Smith@Pfizer.com)"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+#output: rmarkdown::html_vignette
+output: html_notebook
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(fig.width=6, fig.height=6)
-```
-
-## What does `rspeaksnonmem` do?
-
-`rspeaksnonmem` is designed to allow the user to craft workflows based on a 
-given NONMEM model. It is not intended to replace Perl speaks Nonmem (PsN) - 
-in fact `rspeaksnonmem` can call and use PsN functionality from an R script. 
-In fact `rspeaksnonmem` could equally be called "rspeaksPsN". `rspeaksnonmem` 
-helps the user by allow them to write complex workflows using NONMEM, PsN and R. 
-For example performing data checkout (exploratory analysis), using a "template" 
-model as a starting point for model refinement, specifying and running a 
-sequence of tasks for every model, collating results across models for model 
-comparison.
-
-After importing and parsing a control stream to an R object using the `RNMImport`
-package, `rspeaksnonmem` allows the user to easily change initial estimates, 
-change data attributes or change task properties (estimation or simulation 
-settings) without having to change the model. This saves a lot of textual 
-searching by the user. 
-
-To best use `rspeaksnonmem` it is useful to think of the NMTRAN expression of 
-the model as a combination of:
-* Data specification
-* Parameter specification
-* Model specification (structural, covariate and stochastic components)
-* Task specification
- 
-With `rspeaksnonmem` it is easy to alter data, parameter and task information, 
-but altering the model specification has knock-on effects across many other 
-aspects. We recommend that the user sets up the model in such a way that it is 
-easy to change the model simply by fixing or estimating certain parameters i.e. 
-fixing population parameters and/or altering the OMEGA and SIGMA parameter 
-specification. 
-
-Using a template model and a user-specified workflow function e.g. a function 
-combining `execute_PsN` + `sumo_PsN` + `basic_GOF` the user could specify a 
-number of combinations of THETA, OMEGA and SIGMA that would test a range of 
-plausible models, run these models and then compare the output (OFV / AIC and 
-model diagnostics) to find the best model fit. This is suggested not as a way of 
-finding the best ***final*** model, but the best ***base*** model for further 
-refinement. There is no substitute for the knowledge and skill of an analyst in 
-building and assessing models. We refer the reader to Schmidt and Radivojevic 
-(2014), JPKPD (<http://www.ncbi.nlm.nih.gov/pubmed/25056507>).
-
-## Installation 
-
-### Dependencies 
-
-`rspeaksnonmem` relies on the package [`RNMImport`](https://github.com/MangoTheCat/RNMImport) 
-function `importNmMod` which reads and parses the NONMEM control stream. 
-`rspeaksnonmem` then works with the data, parameter values, and task information 
-separately from the model.
-
-Before installation of `rspeaksnonmem`, the package `RNMImport` needs to be 
-installed. 
-  
-Install RNMIMport from Github using the `devtools` package. `rspeaksnonmem` 
-requires the version of RNMImport on MikeKSmith's Github repository which 
-includes handling of OMEGA and SIGMA blocks and identifying which elements are
-fixed for these parameters.
-
-```{r install_dependencies, include=F}
-  #devtools::install_git("MangoTheCat/RNMImport")
-  #devtools::install_github("MikeKSmith/RNMImport")
-```
-
-### Install rspeaksnonmem
-Eventually, `rspeaksnonmem` will be released to CRAN, but while still in 
-development `rspeaksnonmem` can most easily be installed from GitHub using the 
-`devtools` package:
-
-```{r install_rspeaksnonmem, include=F}
-    #devtools::install_github("MikeKSmith/rspeaksnonmem")
-```
-
-Alternatively, if the source files are available locally, you can load the 
-functions directly.
-  
-```{r,echo=FALSE,results='hide',message=FALSE}
+```{r setup,echo=FALSE,results='hide',message=FALSE, warning=FALSE}
  devtools::load_all(pkg = ".")
- devtools::load_all(pkg = "C:\\Users\\smith_mk\\Documents\\Working documents\\RNMImport")
-```
-
-```{r, include=FALSE, echo=FALSE}
-#library(rspeaksnonmem)
-```
-
-Copy an example dataset and model to a directory of your choice
-
-```{r,results='hide',echo=T}
-getwd()
-
 file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
                            "warfarin_conc_pca.csv"),
             to = getwd(), overwrite = T )
 file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
-                           "warfarin_bootstrap50.dta"),
-            to = getwd(), overwrite = T )
-file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
                            "warfarin.ctl"),
             to = getwd(), overwrite = T )
+file.rename(from = "warfarin.ctl", "run0.ctl")
 ```
 
-The initial model within the workflow should act as a "template" for 
-modifications. The best practice is to use a model where all possible parameters 
-are defined (including OMEGAs and covariances / correlations) but where it is 
-possible to fix parameters to zero or some null value. We can then run and test 
-a wide variety of models simply by updating the $THETA, $OMEGA and $SIGMA 
-parameters to allow estimation.
+In this notebook we will look at running NONMEM and PsN from R using the R
+package `rspeaksnonmem`. 
 
-## Read the control stream using RNMImport 
-First, we need to read the NONMEM control stream into R using the `importNmMod` 
-function of RNMImport.
+### Overview
+
+This demo will show the following steps:
   
-```{r readControlStream}
-warfModel <- importNmMod("warfarin.ctl")
-class(warfModel)
-names(warfModel)
-```
-This function reads NONMEM control streams and parses the code. The initial R 
-object contains the raw code as a vector of character strings, any comments
-from the NONMEM code (anything after ";" in the NMTRAN), the name of the control
-file in `controlFile` and the parsed code within the list `problemContents`. 
-RNMImport allows for cases where there is more than one NONMEM `$PROBLEM` 
-statement within the code. 
-
-We can select the parsed control stream as the basis for modification. Here we
-take the first / only `$PROBLEM` statement content.
+  - Running NONMEM and PsN
+  - Integrating results into a Notebook.
   
-```{r viewParsedNM}
-warfTemplateModel <- warfModel$problemContents[[1]]
-str(warfTemplateModel)
+### Step 1: Running NONMEM
+First, let's run a model and knit the results back into this notebook. Note 
+that in the `command` argument to the function we specify the complete path to the
+NONMEM executable .bat file. This allows you to be very precise about which
+version of NONMEM you use. If the `clean` argument is non-zero it cleans up the 
+working directory deleting all of the temporary NONMEM files, leaving only the 
+output. 
+
+```{r RunNONMEM}
+  estimate_NM(command = "c:/nm72/run/nmfe72.bat",
+              modelFile = "run0.ctl",
+              clean = 1)
 ```
 
-Now with the parsed content, it is much easier to change elements within the 
-NONMEM control stream since we're only manipulating text strings. But since the 
-code has been parsed it's more transparent to a third party exactly what is being
-changed.
+### Step 2: Summarise estimation:
+We can now use PsN command `sumo` to summarise the output. Note that here we
+are not using the `command` argument, but instead we specify the installation
+directory for Perl / PsN and which PsN version we are using. `rspeaksnonmem` 
+will then create a command based on the directory, `sumo` and version information.
 
-First let's change the dataset. Here I've sampled 50 subjects from the original 
-warfarin dataset (warfarin.csv) into a dataset called "warfarin_bootstrap50.dta".
-Since the names and uses of the data columns is unchanged, we do not need to 
-change anything in the `$INPUT statement` of NMTRAN. So we create a new object
-called `newData` containing the original code, then update the file name.
-
-```{r updateDataset}
-newData <- warfModel$problemContents[[1]]$Data
-newData[,"File"] <- "warfarin_bootstrap50.dta"
+```{r callSumo}
+  sumo_PsN(installPath = "c:/strawberry/perl",
+           version = "4.6.0",
+           lstFile = "run0.lst")
 ```
+### Step 3: Model Diagnostics
+Next, we might want to produce some model diagnostics using the R package 
+`xpose4`. To do this, we need to create an Xpose database object and then 
+create the diagnostic plots. Xpose needs the run number in order to pick up
+the $TABLE file outputs from NONMEM.
 
-In a similar way, we can then update any element of the model using this 
-parsed set of commands. `rspeaksnonmem` provides some additional functions to 
-extract certain elements of the parsed control stream. 
-
-"Object" | `rspeaksnonmem` Function  | NMTRAN blocks
----------|---------------------------|-----------------------------
-Data     | getNMDataObjects          | `$DATA`, `$INPUT`
-Parameter| getNMParameterObjects     | `$THETA`, `$OMEGA`, `$SIGMA`
-Task     | getNMTaskPropertiesObjects| `$EST`,`$COV`, `$TAB`
-Model    | getNMModelObjects         | everything else
-
-
-For example: `getNMParameterObjects` returns the $THETA, $OMEGA and $SIGMA 
-records. Since the `$THETA` parameters are represented as a data frame, we can
-easily update the initial values, lower or upper bounds, fix or estimate (unfix)
-`THETA` parameters. With each object returned by the various `getNM<...>` 
-functions we get not only the parsed objects but the raw control stream as well.
-
-```{r getNMParameterObjects}
-params <- getNMParameterObjects(warfModel)
-str(params)
-```
-
-Together the Data, Parameters, Model and Task "objects" form a 
-"Modelling Object Group" or MOG which is used for a specific estimation task.
-
-In our example, the template model has POP_TLAG fixed to zero. To "unfix" this, 
-we need to provide lower, initial (Est) and upper bounds for POP_TLAG. Note that 
-params$THETA has named rows using the comments after each THETA line in the 
-NMTRAN control stream.
-
-We can create multiple "objects" corresponding to different models that we wish
-to explore. So below we create an object called thetaNoLag where the `$THETA`
-for the LAG term is fixed to zero. We also create an object called "thetaLag"
-where we set `FIX = FALSE` and give a reasonable initial value for the Lag.
-  
-```{r specifyTHETAs}
-FIX_POP_TLAG <- list(Lower = 0, Est = 0, Upper = 0, FIX = TRUE, comments = "POP_TLAG")
-EST_POP_TLAG <- list(Lower = 0, Est = 0.75, Upper = 1.5, FIX = FALSE, comments = "POP_TLAG")
-
-thetaNoLag <- warfTemplateModel$Theta
-thetaNoLag["POP_TLAG",] <- FIX_POP_TLAG
-
-thetaLag <- warfTemplateModel$Theta
-thetaLag["POP_TLAG",] <- EST_POP_TLAG
-```
-
-The template model has a combined proportional and additive residual error
-structure. This has been parameterised as
-`W = THETA(5)+THETA(6)*CONC` in the NMTRAN code. W then multiplies a standard
-Normal variate to give the residual error:
-`W * SIGMA` where SIGMA ~ N(0,1).
-  
-To be able to estimate different residual error models, we can then simply
-fix one or other component of the residual error model. Fixing `THETA(5)` to
-zero will estimate with only proportional error, while fixing `THETA(6)` to zero
-will estimate with only additive error. Estimating both provides the combined
-additive and proportional residual error.
-
-Similarly to the above, we can then create a new object which estimates 
-`THETA(5)` which we will give the name "RUV_ADD" for Residual Unexplained 
-Variability ADDitive component.
-
-```{r specifyRUV}
-ruvAdd <- list(Lower = 0, Est = 0.1, FIX = FALSE, comments = "RUV_ADD")
-thetaLagComboRUV <- thetaLag
-thetaLagComboRUV["RUV_ADD",] <- ruvAdd
-```
-
-Again, in a similar way we can update the between subject `OMEGA` parameter 
-specification to examine a variety of models - where Clearance (CL) and Volume
-of Distribution (V) are independent / uncorrelated, or where they are correlated.
-We can also easily fix or estimate between subject variability on parameters such
-as KA by specifying initial values and ensuring `FIX = FALSE`.
-
-The template model specifies an OMEGA block (covariance) between ETA_CL and ETA_V.
-```{r specifyOMEGAs}
-CLVBlock_noTLAG <- params$OMEGA
-diagPPV_noTLAG <- list(list(values = diag(c(0.1,0.1,0.1)), 
-                            block=2, 
-                            FIX = FALSE,
-                            SAME = FALSE),
-                            list(values = 0, FIX = TRUE))
-```
-
-Bringing all of these different components together, we can examine the fit of 
-a number of basic models, starting only with the template model. We use the 
-`updateModel` function to update the template model with objects that we have
-defined or altered.
-
-```{r defineModels}
-  run1 <- updateModel(warfTemplateModel, 
-                      theta = thetaNoLag, 
-                      omega = diagPPV_noTLAG, 
-                      data = newData, 
-                      runno = 1) ## First model
-
-  run2 <- updateModel(warfTemplateModel, 
-                      theta = thetaLag, 
-                      omega = diagPPV_noTLAG , 
-                      data = newData,   
-                      runno = 2)  ## Add POP_TLAG
-
-  run3 <- updateModel(warfTemplateModel, 
-                      theta = thetaLag, 
-                      omega = CLVBlock_noTLAG, 
-                      data = newData,    
-                      runno = 3)  ## Change to block CL, V
-```
-
-`rspeaksnonmem` provides function that enable us to run NONMEM or PsN without
-leaving R. By combining these, we can define a sequence of steps that we may
-wish to perform in a script, or define a function that combines workflow steps
-that we would wish to perform **on each model**.
-
-```{r defineWorkflow}
-myPopPKWorkflow <- function(model, workingDir=NULL){
-  if ( is.null(workingDir) ) workingDir <- file.path(getwd(),deparse(substitute(model)))
-  dir.create(workingDir)
-
-  file.copy(from = model$Data[,"File"], to = workingDir)
-  
-  controlFile <- paste(deparse(substitute(model)),".ctl",sep = "")
-  lstFile <- paste(deparse(substitute(model)),".lst",sep = "")
- 
-  writeNMControlStream(templateModel = warfModel$Raw, 
-                       parsedControl = model,
-                       outputFile = controlFile)
-
-  estimate_NM(modelFile = controlFile, lstFile = lstFile, 
-              command = "c:/nm72/run/nmfe72.bat")
-              
-  sumo_PsN(installPath="c:/strawberry/perl",
-           version="4.6.0",
-           lstFile = lstFile)
-
+```{r setupXposeDiagnostics, warning=FALSE, message=FALSE}
   runno <- as.numeric(gsub("[a-z]", "", list.files(pattern = "^sdtab")[1]))
   
   ## ----createXpdb----------------------------------------------------------
   xpdb <- xpose4::xpose.data(runno, quiet = T)
   # save(base.xpdb, file='Xpose database.RData')
-  
-  ## ----xposeGOF------------------------------------------------------------
-  print(xpose4::dv.vs.pred.ipred(xpdb))
-  print(xpose4::pred.vs.idv(xpdb))
-  print(xpose4::ipred.vs.idv(xpdb))
-  print(xpose4::wres.vs.idv(xpdb))
-  print(xpose4::wres.vs.pred(xpdb))
-  print(xpose4::ranpar.hist(xpdb))
-  print(xpose4::ind.plots(xpdb, layout = c(4, 4)))  
-}
 ```
 
-We can then run the workflow for each model in turn or "apply" the function 
-across a list of models to be evaluated.
+#### DV vs PRED / IPRED
+```{r dv.vs.pred.ipred, warning=FALSE, message=FALSE}
+  print(xpose4::dv.vs.pred.ipred(xpdb))
+```
+#### PRED vs IDV
+```{r pred.vs.idv, warning=FALSE, message=FALSE}
+  print(xpose4::pred.vs.idv(xpdb))
+```
+  
+#### PRED vs IDV
+```{r ipred.vs.idv, warning=FALSE, message=FALSE}
+  print(xpose4::ipred.vs.idv(xpdb))
+```
+#### WRES vs IDV
+```{r wres.vs.idv, warning=FALSE, message=FALSE}
+  print(xpose4::wres.vs.idv(xpdb))
+```
+#### WRES vs PRED
+```{r wres.vs.pred, warning=FALSE, message=FALSE}
+  print(xpose4::wres.vs.pred(xpdb))
+```
 
-```{r runModel1}
- Model1 <- myPopPKWorkflow(run1)
+#### EBEs histogram
+```{r ranpar.hist, warning=FALSE, message=FALSE}
+  print(xpose4::ranpar.hist(xpdb))
+```
+
+#### Individual Plots
+```{r ind.plots, warning=FALSE, message=FALSE}
+  print(xpose4::ind.plots(xpdb, layout = c(4, 4)))  
+```
+
+### Step 4: VPC diagnostisc
+We may also want to investigate simulation-based diagnostics using the PsN
+routine VPC. In the call to `VPC_PsN` we have specified the required arguments
+for VPC (samples, seed) but you can also pass additional arguments to the VPC
+routine by passing a name-value list to the argument `psnOpts`. `rspeaksnonmem`
+will check these arguments against the options for VPC and let you know if any
+are mis-specified. Here the argument `min_points_per_bin` is not a valid option
+for VPC. (The correct option is `min_points_**in**_bin`.)
+
+```{r VPC_PsN}
+VPC_PsN( modelFile='run0.ctl', 
+         installPath = "c:/strawberry/perl",
+         version = "4.6.0",
+         working.dir='Run1_VPC', 
+         samples=100, seed='54321',
+         psnOpts=list(lst='run0.lst', 
+                      auto_bin = '5',
+                      min_points_per_bin = '2'))
+```
+
+and then use the Xpose function xpose_vpc to plot the result:
+```{r plot_VPC}
+vpcdir <- "Run1_VPC"
+
+vpctab <- file.path(vpcdir,"vpctab")
+vpcinfo <- file.path(vpcdir,"vpc_results.csv")
+
+xpose4::xpose.VPC(vpc.info=vpcinfo,	vpctab=vpctab)
 ```
