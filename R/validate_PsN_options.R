@@ -21,8 +21,8 @@ validate_PsN_options <- function(command = NULL,
                                  version = NULL,
                                  psnOpts = NULL) {
 
-  require(dplyr)
-  require(stringr)
+  require(dplyr, quietly = TRUE)
+  require(stringr, quietly = TRUE)
   
   if(is.null(tool) && is.null(command)) stop("One of tool or command must be specified")
   
@@ -65,7 +65,10 @@ validate_PsN_options <- function(command = NULL,
   validName <- !is.na(matchedNames)
   if (!all(validName)) 
     warning(paste(names(psnOpts[!validName]),
-                  "is not a valid PsN argument",collapse = "\n"))
+                  "is not a valid PsN argument for",
+                  tool,
+                  "\n",
+                  collapse = "\n"))
   if (!any(validName)) return("")
 
   psnOpts <- psnOpts[validName]
@@ -83,14 +86,14 @@ validate_PsN_options <- function(command = NULL,
   if (!all(validArg)) 
     warning(paste(psnOpts[!validArg], 
                   "is not a valid value for the option", 
-                  names(psnOpts[!validArg])))
+                  names(psnOpts[!validArg]),"\n"))
   
   checked <- psnOpts[validArg]
 
   if ( any(psnOptions$mandatory) )
     if (!(psnOptions$name[psnOptions$mandatory] %in% names(psnOpts) ) )
     stop(paste("Mandatory option",psnOptions$name[psnOptions$mandatory],
-                  "is not present in the provided option list"))
+                  "is not present in the provided option list","\n"))
 
   if (length(checked)>0) {
   optList <- list(name = names(checked),

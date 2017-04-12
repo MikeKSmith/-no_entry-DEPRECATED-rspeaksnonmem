@@ -45,29 +45,32 @@ runRecord_PsN <- function(command = NULL,
   psnOpts <- c(list(to=to),
                psnOpts) 
   
-  modelFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", modelExtension,
-                                           sep = ""), 
-                           recursive = T)
-  lstFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", outputExtension, 
-                                         sep = ""),
-                         recursive = T)
+  psnOpts <- c(list(mod_ext = modelExtension),
+               psnOpts)
   
-  runpath <- file.path(working.dir, "RunRecord")
-  dir.create(runpath)
+  if (is.null(command)) {
+    if (is.null(installPath)) stop("Please specify an installPath for PsN")
+    if (is.null(version)) stop("Please specify a version of PsN")   
+  }
   
-  file.copy(modelFiles, file.path(runpath))
-  file.copy(lstFiles, file.path(runpath))
+  psnOptsText <- ifelse(!is.null(psnOpts), 
+                        validate_PsN_options(tool = tool,
+                                             installPath = installPath,
+                                             version = version,
+                                             psnOpts = psnOpts),
+                        "")
   
   baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "runRecord", ...), 
+                        defineExecutable(tool = "runrecord",
+                                         installPath = installPath,
+                                         version = version),
                         defineExecutable(command = command))
   
-  callPsN(command = command,
-          tool = "runrecord", 
-          installPath = installPath,
-          version = version,
-          file = modelFile,
-          psnOpts = psnOpts)
+  command <- paste(baseCommand, " ", 
+                   psnOptsText)
+  
+  cat(paste(command, "\n"))
+  execute(command = command)
   
   runRecord <- read.table("AAruninfo.txt", sep = ";", row.names = NULL, skip = 5, 
                           header = F, stringsAsFactors = F, as.is = T)
@@ -77,7 +80,5 @@ runRecord_PsN <- function(command = NULL,
   
   runRecord$Run <- seq(1, to)
   runRecord <- runRecord[, -ncol(runRecord)]
-  if (cleanup) 
-    cleanup()
   return(runRecord)
 }
