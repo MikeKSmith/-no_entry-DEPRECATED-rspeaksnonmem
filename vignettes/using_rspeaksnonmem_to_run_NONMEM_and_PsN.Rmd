@@ -2,12 +2,12 @@
 title: "Using rspeaksnonmem to run NONMEM & PsN"
 author: "Mike K Smith (Mike.K.Smith@Pfizer.com)"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Vignette Title}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
-#output: html_notebook
+# output: rmarkdown::html_vignette
+# vignette: >
+#   %\VignetteIndexEntry{Vignette Title}
+#   %\VignetteEngine{knitr::rmarkdown}
+#   %\VignetteEncoding{UTF-8}
+output: html_notebook
 ---
 
 ```{r setKnitrOptions, echo=FALSE,}
