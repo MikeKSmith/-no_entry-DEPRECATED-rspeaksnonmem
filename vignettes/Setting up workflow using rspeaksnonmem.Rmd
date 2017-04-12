@@ -225,9 +225,7 @@ Similarly to the above, we can then create a new object which estimates
 Variability ADDitive component.
 
 ```{r specifyRUV}
-ruvAdd <- list(Lower = 0, Est = 0.1, FIX = FALSE, comments = "RUV_ADD")
-thetaLagComboRUV <- thetaLag
-thetaLagComboRUV["RUV_ADD",] <- ruvAdd
+ruvPropOnly <- list(Est = 0, FIX = TRUE, comments = "RUV_ADD")
 ```
 
 Again, in a similar way we can update the between subject `OMEGA` parameter 
@@ -275,7 +273,7 @@ leaving R. By combining these, we can define a sequence of steps that we may
 wish to perform in a script, or define a function that combines workflow steps
 that we would wish to perform **on each model**.
 
-```{r defineWorkflow}
+```{r defineWorkflow, warning = FALSE, message = FALSE}
 myPopPKWorkflow <- function(model){
   controlFile <- paste(deparse(substitute(model)),".ctl",sep = "")
   lstFile <- paste(deparse(substitute(model)),".lst",sep = "")
@@ -292,6 +290,26 @@ myPopPKWorkflow <- function(model){
               lstFile = lstFile,
               clean = 1,
               working.dir = workingDir)
+ 
+  sumo_PsN(tool = "sumo-3.5.4",
+           installPath = "c:/strawberry/perl",
+           version = "4.6.0",
+           lstFile = lstFile)
+
+  runno <- as.numeric(gsub("[a-z]", "", deparse(substitute(model))))
+  
+  ## ----createXpdb----------------------------------------------------------
+  xpdb <- xpose4::xpose.data(runno = runno, quiet = T)
+  # save(base.xpdb, file='Xpose database.RData')
+  
+  ## ----xposeGOF------------------------------------------------------------
+  print(xpose4::dv.vs.pred.ipred(xpdb))
+  print(xpose4::pred.vs.idv(xpdb))
+  print(xpose4::ipred.vs.idv(xpdb))
+  print(xpose4::wres.vs.idv(xpdb))
+  print(xpose4::wres.vs.pred(xpdb))
+  print(xpose4::ranpar.hist(xpdb))
+  print(xpose4::ind.plots(xpdb, layout = c(4, 4)))  
 }
 ```
 
