@@ -12,7 +12,6 @@ Description: Read, Modify and run NONMEM from within R. Also calls PsN to run mo
 License: License: LGPL
 LazyData: TRUE
 Depends: R (>= 2.6.1)
-Imports: RNMImport
-Suggests: testthat,
-    knitr, dplyr, stringr
+Imports: RNMImport, knitr, dplyr, stringr
+Suggests: testthat
 VignetteBuilder: knitr
