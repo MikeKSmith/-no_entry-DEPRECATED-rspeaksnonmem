@@ -1,5 +1,5 @@
 # rspeaksnonmem
-R package for working with and executing NONMEM control files, also integrating PsN
+R package for working with and executing NONMEM control files, also integrating PsN.
 
 ## Description
 
@@ -12,6 +12,9 @@ template.
 `rspeaksnonmem` also allows the user to run NONMEM models from R either directly running the nmfe.bat or by
 calling [Perl speaks NONMEM](http://psn.sourceforge.net) functions like "execute". Other PsN functions can be run from
 R - VPC (Visual Predictive Check), bootstrap, SSE (Stochastic Simulation and Estimation).
+
+### ISOP Study Group demonstration
+`rspeaksnonmem` was demonstrated at an ISOP Study Group webinar which is available on YouTube: https://www.youtube.com/watch?v=VFdGnWrRXw8.
 
 ## Installation
 
