@@ -1,5 +1,10 @@
 #' Uses PsN RunRecord function to create a Run Record
 #'
+#' @param command Explicit PsN command to be run at shell/DOS prompt.
+#' @param tool PsN tool name. To be used in conjunction with \code{"installPath"}
+#'  and \code{"version"}. Defaults to "runrecord".
+#' @param installPath Installation path for Perl / PsN. e.g. "c:/strawberry/perl"
+#' @param version Version of PsN as a character string. e.g. "4.6.0"
 #' @param to Run numbers to include in the Run Record.
 #' @param runRoot Root for Run control and output files e.g. Run1.mod, Run1.lst 
 #' would have runRoot='Run'
@@ -7,16 +12,25 @@
 #' Default is '.mod'.
 #' @param outputExtension Extension for NONMEM output files. Default is '.lst'.
 #' @param psnOpts Additional arguments for PsN runrecord function.
-#' @param cleanup Clean up directory once processing is finished?. Default TRUE.
+#' @param clean Clean up working directory following completion. PsN option.
+#' Default = 1.
 #' @param working.dir Working directory containing control streams and where 
 #' output files should be stored
 #' @return PsN Run Record output
 #' @examples
+#' @export
 #' 
-runRecord_PsN <- function(tool = NULL, command = NULL, to = NULL, 
-                          runRoot = "Run", modelExtension = ".mod",
-                          outputExtension = ".lst", psnOpts = NULL, 
-                          clean = 1, working.dir = NULL, ...) {
+runRecord_PsN <- function(command = NULL, 
+                          tool = "runrecord",
+                          installPath = NULL,
+                          version = NULL,
+                          to = NULL, 
+                          runRoot = "Run", 
+                          modelExtension = ".mod",
+                          outputExtension = ".lst", 
+                          psnOpts = NULL, 
+                          clean = 1, 
+                          working.dir = NULL) {
   
   if (!is.null(working.dir)) {
     psnOpts <- c(list(directory = working.dir),
@@ -31,25 +45,32 @@ runRecord_PsN <- function(tool = NULL, command = NULL, to = NULL,
   psnOpts <- c(list(to=to),
                psnOpts) 
   
-  modelFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", modelExtension,
-                                           sep = ""), 
-                           recursive = T)
-  lstFiles <- list.files(pattern = paste(runRoot, "[0-9]\\", outputExtension, 
-                                         sep = ""),
-                         recursive = T)
+  psnOpts <- c(list(mod_ext = modelExtension),
+               psnOpts)
   
-  runpath <- file.path(working.dir, "RunRecord")
-  dir.create(runpath)
+  if (is.null(command)) {
+    if (is.null(installPath)) stop("Please specify an installPath for PsN")
+    if (is.null(version)) stop("Please specify a version of PsN")   
+  }
   
-  file.copy(modelFiles, file.path(runpath))
-  file.copy(lstFiles, file.path(runpath))
+  psnOptsText <- ifelse(!is.null(psnOpts), 
+                        validate_PsN_options(tool = tool,
+                                             installPath = installPath,
+                                             version = version,
+                                             psnOpts = psnOpts),
+                        "")
   
   baseCommand <- ifelse(is.null(command), 
-                        defineExecutable(tool = "runRecord", ...), 
+                        defineExecutable(tool = "runrecord",
+                                         installPath = installPath,
+                                         version = version),
                         defineExecutable(command = command))
   
-  callPsN(baseCommand = baseCommand, modelFile = modelFile, 
-          psnOpts = psnOpts)
+  command <- paste(baseCommand, " ", 
+                   psnOptsText)
+  
+  cat(paste(command, "\n"))
+  execute(command = command)
   
   runRecord <- read.table("AAruninfo.txt", sep = ";", row.names = NULL, skip = 5, 
                           header = F, stringsAsFactors = F, as.is = T)
@@ -59,7 +80,5 @@ runRecord_PsN <- function(tool = NULL, command = NULL, to = NULL,
   
   runRecord$Run <- seq(1, to)
   runRecord <- runRecord[, -ncol(runRecord)]
-  if (cleanup) 
-    cleanup()
   return(runRecord)
 }

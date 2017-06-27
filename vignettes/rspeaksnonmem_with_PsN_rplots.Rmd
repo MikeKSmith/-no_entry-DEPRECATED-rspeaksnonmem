@@ -1,0 +1,27 @@
+---
+title: "rspeaksnonmem_with_PsN_rplots"
+author: "Mike K Smith"
+date: "27 June 2017"
+output: html_document
+---
+```{r setup,echo=FALSE,results='hide',message=FALSE, warning=FALSE}
+ devtools::load_all(pkg = ".")
+file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
+                           "warfarin_conc_pca.csv"),
+            to = getwd(), overwrite = T )
+file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
+                           "warfarin.ctl"),
+            to = getwd(), overwrite = T )
+file.rename(from = "warfarin.ctl", "run0.ctl")
+```
+
+```{r PsN_execute_with_plots, message = FALSE}
+execute_PsN(installPath = "c:/strawberry/perl",
+            version = "4.7.0",
+            working.dir = "run0_execute",
+            modelFile = "run0.ctl",
+            psnOpts = list(rplots = 1))
+```
+
+```{r child="./run0_execute/PsN_execute_plots.Rmd"}
+```

@@ -1,26 +1,60 @@
 #' Checks valid options for PsN commands
 #'
 #' @param command PsN command.
+#' @param tool PsN tool.
+#' @param installPath Installation path for Perl / PsN
+#' @param version Version of PsN
 #' @param psnOpts List of additional PsN command line options 
 #' (format: optionName = value or optiontName=TRUE/FALSE )
+#' @details Either specify an explicit command to run at the system prompt 
+#' or specify a combination of tool, installPath and version.
 #' @return character string of valid PsN arguments
 #' @examples
-#' validate_PsN_options(tool='execute', psnOpts = list(picky=TRUE, retries=3, 
+#' validate_PsN_options(command='execute', 
+#' psnOpts = list(picky=TRUE, retries=3, 
 #' tweak_inits=TRUE))
 #' @export
 
-validate_PsN_options <- function(command = NULL, psnOpts = NULL, 
-                                 perl_options_command = "psn_options") {
+validate_PsN_options <- function(command = NULL, 
+                                 tool = NULL,
+                                 installPath = NULL,
+                                 version = NULL,
+                                 psnOpts = NULL) {
 
-  require(dplyr)
+  require(dplyr, quietly = TRUE)
+  require(stringr, quietly = TRUE)
   
-  if (is.null(command)) stop("Expecting a valid PsN command")
+  if(is.null(tool) && is.null(command)) stop("One of tool or command must be specified")
   
-  psnOptionCommand <- defineExecutable(command = "psn_options*")
-  psnCommon <- system( paste(psnOptionCommand, "-h"), intern = TRUE)
+  # If using tool then specify installPath and version
+  if (is.null(command) && !is.null(tool)){
+    if (is.null(installPath)) stop("If using tool, please specify an installPath")
+    if (is.null(version)) stop("If using tool, please specify a version")      
+  }
+  
+  psnOptionCommand <- ifelse( is.null(command), 
+                              defineExecutable(tool = "psn_options", 
+                                               version = version,
+                                               installPath = installPath),
+                              defineExecutable(command = file.path(
+                                dirname(
+                                  stringr::word(command,1)
+                                  ),"psn_options")
+                                )
+                              )
+
+  psnCommon <- system(command = paste(psnOptionCommand,"-h"), intern = T)
   psnCommon <- parse_PsN_options(psnCommon)
   
-  command <- paste(command, "-h ")
+  command <- ifelse(is.null(command),
+                    paste(
+                      defineExecutable(tool = tool, 
+                                       version = version,
+                                       installPath = installPath),
+                      "-h"
+                    ),
+                    paste(command, "-h ")
+  )
   psnOptions <- system(command, intern = TRUE)
   psnOptions <- parse_PsN_options(psnOptions)
 
@@ -31,7 +65,10 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL,
   validName <- !is.na(matchedNames)
   if (!all(validName)) 
     warning(paste(names(psnOpts[!validName]),
-                  "is not a valid PsN argument",collapse = "\n"))
+                  "is not a valid PsN argument for",
+                  tool,
+                  "\n",
+                  collapse = "\n"))
   if (!any(validName)) return("")
 
   psnOpts <- psnOpts[validName]
@@ -49,14 +86,14 @@ validate_PsN_options <- function(command = NULL, psnOpts = NULL,
   if (!all(validArg)) 
     warning(paste(psnOpts[!validArg], 
                   "is not a valid value for the option", 
-                  names(psnOpts[!validArg])))
+                  names(psnOpts[!validArg]),"\n"))
   
   checked <- psnOpts[validArg]
 
   if ( any(psnOptions$mandatory) )
     if (!(psnOptions$name[psnOptions$mandatory] %in% names(psnOpts) ) )
     stop(paste("Mandatory option",psnOptions$name[psnOptions$mandatory],
-                  "is not present in the provided option list"))
+                  "is not present in the provided option list","\n"))
 
   if (length(checked)>0) {
   optList <- list(name = names(checked),
