@@ -101,7 +101,7 @@ has been used and the Perl executable associated with it.
 ```{r defineExecutable4}
 defineExecutable(tool = "vpc", 
                  installPath = "c:/strawberry/perl", 
-                 version = "4.6.0")
+                 version = "4.7.0")
 ```
 
 ### Validating PsN option lists
@@ -134,9 +134,14 @@ the routines' `-h` help files.
 ### Other PsN functionality
 Although functions have been provided as wrappers to the PsN functions, it is 
 easy to extend these to any other PsN function using the function callPsN.
-```{r other_PsN}
+
+```
+ linearize-4.7.0 warfarin.ctl -dir=linearize
+```
+
+```{r other_PsN, echo = FALSE}
   callPsN(tool = "linearize", 
           installPath = "c:/strawberry/perl",
-          version = "4.6.0",
+          version = "4.7.0",
           file = "warfarin.ctl")
 ```

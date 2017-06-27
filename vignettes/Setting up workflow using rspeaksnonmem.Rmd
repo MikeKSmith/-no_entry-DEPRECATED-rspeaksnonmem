@@ -285,7 +285,7 @@ myPopPKWorkflow <- function(model){
                        outputFile = controlFile)
 
  execute_PsN(installPath = "c:/strawberry/perl",
-              version = "4.6.0",
+              version = "4.7.0",
               modelFile = controlFile, 
               lstFile = lstFile,
               clean = 1,
@@ -293,7 +293,7 @@ myPopPKWorkflow <- function(model){
  
   sumo_PsN(tool = "sumo-3.5.4",
            installPath = "c:/strawberry/perl",
-           version = "4.6.0",
+           version = "4.7.0",
            lstFile = lstFile)
 
   runno <- as.numeric(gsub("[a-z]", "", deparse(substitute(model))))

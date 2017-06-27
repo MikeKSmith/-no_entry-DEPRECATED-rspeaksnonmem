@@ -49,7 +49,7 @@ will then create a command based on the directory, `sumo` and version informatio
 
 ```{r callSumo}
   sumo_PsN(installPath = "c:/strawberry/perl",
-           version = "4.6.0",
+           version = "4.7.0",
            lstFile = "run0.lst")
 ```
 ### Step 3: Model Diagnostics
@@ -110,7 +110,7 @@ for VPC. (The correct option is `min_points_**in**_bin`.)
 ```{r VPC_PsN}
 VPC_PsN( modelFile='run0.ctl', 
          installPath = "c:/strawberry/perl",
-         version = "4.6.0",
+         version = "4.7.0",
          working.dir='Run1_VPC', 
          samples=100, seed='54321',
          psnOpts=list(lst='run0.lst', 
