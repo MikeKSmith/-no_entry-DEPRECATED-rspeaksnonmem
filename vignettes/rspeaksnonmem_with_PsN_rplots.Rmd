@@ -1,11 +1,22 @@
 ---
-title: "rspeaksnonmem_with_PsN_rplots"
+title: "rspeaksnonmem with PsN rplots .Rmd files"
 author: "Mike K Smith"
-date: "27 June 2017"
+date: "03 July 2017"
 output: html_document
+params: 
+  rplots: 1
+  psnRunDir: "run1"
 ---
-```{r setup,echo=FALSE,results='hide',message=FALSE, warning=FALSE}
- devtools::load_all(pkg = ".")
+
+```{r setup, message = FALSE}
+# devtools::install_github(repo = "MikeKSmith/rspeaksnonmem")
+# devtools::install_github(repo = "MangoTheCat/RNMImport")
+
+library(rspeaksnonmem)
+setwd(".")
+```
+
+```{r copyFiles,echo=FALSE,results='hide',message=FALSE, warning=FALSE}
 file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
                            "warfarin_conc_pca.csv"),
             to = getwd(), overwrite = T )
@@ -15,13 +26,52 @@ file.copy(from = file.path(system.file("exdata", package = "rspeaksnonmem"),
 file.rename(from = "warfarin.ctl", "run0.ctl")
 ```
 
-```{r PsN_execute_with_plots, message = FALSE}
-execute_PsN(installPath = "c:/strawberry/perl",
-            version = "4.7.0",
-            working.dir = "run0_execute",
-            modelFile = "run0.ctl",
-            psnOpts = list(rplots = 1))
+Being able to run PsN from within R means that you can easily combine execution
+with the PsN output plot markdown files (.Rmd files within the PsN working 
+directory). Here we're going to run the PsN `execute` function with the option
+to create diagnostic plots `rplots=1`. 
+
+We have parameterised this report by including the following parameters in the 
+YAML header for this report:
+```
+---
+title: "rspeaksnonmem with PsN rplots .Rmd files"
+author: "Mike K Smith"
+date: "03 July 2017"
+output: html_document
+params: 
+  rplots: 1
+  psnRunDir: "run0"
+---
 ```
 
-```{r child="./run0_execute/PsN_execute_plots.Rmd"}
+We can then use these parameters within the R code by referencing params$rplots
+or params$psnRunDir. Having these as parameters of the document means that we
+can re-run the document and change these parameters without having to change
+code ***within*** the document.
+
+## Run Execute
+```{r PsN_execute_with_plots, message = FALSE, warning = FALSE}
+execute_PsN(installPath = "c:/strawberry/perl",
+            version = "4.7.0",
+            modelFile = 'run0.ctl',
+            rplots = params$rplots,
+            working.dir = params$psnRunDir)
+```
+
+We search within the working directory for the .Rmd file and include this as
+a child document to this parent markdown file. `rplotOutput` contains the name
+of the PsN `rplots` output .Rmd file. In case we change the option above, we
+also create a boolean variable `includeRplotOutput`.
+
+```{r, results = "hide"}
+ rplotOutput <- list.files(path = params$psnRunDir,
+                           recursive = TRUE,
+                           pattern = "plots.Rmd",
+                           full.names = TRUE)
+ includeRplotOutput <- params$rplots > 0 
+```
+We use the boolean `includeRplotOutput` to conditionally execute the chunk below.
+
+```{r, child=rplotOutput, eval = includeRplotOutput}
 ```
