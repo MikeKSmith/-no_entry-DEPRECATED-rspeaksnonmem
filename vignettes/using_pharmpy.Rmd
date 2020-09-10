@@ -1,0 +1,48 @@
+---
+title: "Installing and using pharmpy within R"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Installing and using pharmpy within R}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(rspeaksnonmem)
+```
+
+
+```{r FirstTime_setup, eval=FALSE}
+library(reticulate)
+conda_create("r-rspeaksnonmem")
+conda_install("r-rspeaksnonmem", "pharmpy-core", pip = TRUE)
+```
+
+```{r Subsequent_setup}
+library(reticulate)
+use_condaenv("r-rspeaksnonmem")
+pharmpy <- import("pharmpy")
+```
+
+```{r read_NONMEM_using_pharmpy}
+model <- pharmpy$Model(system.file("extdata","warfarin.ctl", package="rspeaksnonmem"))
+model$parameters
+```
+
+```{r update_parameters}
+params <- model$parameters
+params$inits <- list('THETA(1)'=2)  # set initial estimate of THETA(1) to 2
+model$parameters <- params
+model$parameters
+```
+
+```{r write_model, eval=FALSE}
+model$write(path = "warfarin_updated.ctl")
+```
