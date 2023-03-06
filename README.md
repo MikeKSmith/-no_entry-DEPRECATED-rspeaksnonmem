@@ -1,5 +1,7 @@
-# rspeaksnonmem
+# :no_entry: [DEPRECATED] rspeaksnonmem
 R package for working with and executing NONMEM control files, also integrating PsN.
+
+This package is deprecated and will not be updated or further maintained. I suggest instead using the package {Pharmpy} and {Pharmr} developed by Uppsala University, Sweden. https://pharmpy.github.io/latest/index.html. These packages implement much of the functionality in {rspeaksnonmem} in a better and more consistent way, and are actively maintained. 
 
 ## Description
 
